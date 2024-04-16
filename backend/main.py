@@ -10,7 +10,7 @@ import models as models
 
 # Подключение к локальному серверу
 app = FastAPI()
-engine = create_engine('mysql+mysqlconnector://root:@localhost/maindb4')
+engine = create_engine('mysql+mysqlconnector://root:@localhost/maindb5')
 
 Session = sessionmaker(bind=engine)
 
@@ -77,7 +77,7 @@ async def get_messages(posts: list = Depends(get_all_posts)):
     return [
         {
             'username': post.username,
-            'date': post.date, #parse_timestamp(post.date),
+            'date': parse_timestamp(post.date),
             'text': post.message_text,
             'chat_id': post.chat_id,
             'id': post.id,
@@ -98,7 +98,7 @@ async def get_chats(chats: list = Depends(get_all_chats)):
 async def get_message(post: dict = Depends(get_post)):
     return {
         'username': post.username,
-        'date': post.date, #parse_timestamp(post.date),
+        'date': parse_timestamp(post.date),
         'text': post.message_text,
         'chat_id': post.chat_id
     }
@@ -109,7 +109,7 @@ async def get_replies(replies: dict = Depends(get_replies)):
     return [
         {
             'username': reply.username,
-            'date': reply.date, #parse_timestamp(reply.date),
+            'date': parse_timestamp(reply.date),
             'text': reply.message_text,
             'chat_id': reply.chat_id,
             'id': reply.id
