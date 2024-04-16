@@ -1,15 +1,16 @@
-from fastapi import FastAPI, Depends, Query
+from fastapi import FastAPI, Depends, Query, HTTPException
 from sqlalchemy import create_engine, desc
 from sqlalchemy.orm import sessionmaker
 from starlette.middleware.cors import CORSMiddleware
 from datetime import datetime
 from typing import List
+from math import floor
 
 import models as models
 
 # Подключение к локальному серверу
 app = FastAPI()
-engine = create_engine('mysql+mysqlconnector://root:@localhost/maindb')
+engine = create_engine('mysql+mysqlconnector://root:@localhost/maindb4')
 
 Session = sessionmaker(bind=engine)
 
@@ -30,6 +31,9 @@ def get_db():
     finally:
         db.close()
 
+
+def get_date():
+    return floor(datetime.utcnow().timestamp()) + 3 * 60 * 60
 
 # Доработать парсер времени
 def parse_timestamp(timestamp):
@@ -64,15 +68,20 @@ def get_post(msg_id, db: Session = Depends(get_db)):
     return db.query(models.Message).filter(models.Message.id == msg_id).first()
 
 
+def get_replies(msg_id, db: Session = Depends(get_db)):
+    return db.query(models.Reply).filter(models.Reply.post_id == msg_id).all()
+
 # Получаем вопросы-посты
 @app.get("/get_messages")
 async def get_messages(posts: list = Depends(get_all_posts)):
     return [
         {
             'username': post.username,
-            'date': (post.date),
+            'date': post.date, #parse_timestamp(post.date),
             'text': post.message_text,
             'chat_id': post.chat_id,
+            'id': post.id,
+            'chatname': post.chat_username
         }
         for post in posts
     ]
@@ -89,7 +98,34 @@ async def get_chats(chats: list = Depends(get_all_chats)):
 async def get_message(post: dict = Depends(get_post)):
     return {
         'username': post.username,
-        'date': parse_timestamp(post.date),
+        'date': post.date, #parse_timestamp(post.date),
         'text': post.message_text,
         'chat_id': post.chat_id
     }
+    
+
+@app.get("/get_replies/{msg_id}")
+async def get_replies(replies: dict = Depends(get_replies)):
+    return [
+        {
+            'username': reply.username,
+            'date': reply.date, #parse_timestamp(reply.date),
+            'text': reply.message_text,
+            'chat_id': reply.chat_id,
+            'id': reply.id
+        }
+        for reply in replies
+    ]
+
+
+@app.post("/new_reply/")
+async def add_reply(reply: models.Reply_Insert, db: Session = Depends(get_db)):
+    try:
+        db_reply = models.Reply(**reply.dict(), date=get_date())
+        db.add(db_reply)
+        db.commit()
+        db.refresh(db_reply)
+        return db_reply
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"An error occurred while adding reply: {str(e)}")

@@ -5,39 +5,40 @@ create table table_messages
 (
     id            INTEGER
         primary key auto_increment,
-    message_id    INTEGER,
-    chat_id       INTEGER,
-    user_id       INTEGER,
+    message_id    BIGINT,
+    chat_id       BIGINT,
+    user_id       BIGINT,
     message_text  TEXT,
     chat_username TEXT,
     username      TEXT,
-    date          INTEGER
+    date          DATETIME
 );
 
 create table table_replies
 (
     id                      INTEGER
         primary key auto_increment,
-    message_id              INTEGER,
-    chat_id                 INTEGER,
-    user_id                 INTEGER,
+    message_id              BIGINT,
+    chat_id                 BIGINT,
+    user_id                 BIGINT,
     message_text            TEXT,
     chat_username           TEXT,
     username                TEXT,
-    date                    INTEGER,
-    replied_to_user_id      INTEGER,
+    date                    DATETIME,
+    replied_to_user_id      BIGINT,
     replied_to_message_text TEXT,
-    replied_to_message_id   INTEGER,
-    replied_to_message_date TEXT
+    replied_to_message_id   BIGINT,
+    replied_to_message_date TEXT,
+    post_id integer references table_messages(id)
 );
 
 create table table_users
 (
     id              INTEGER
         primary key auto_increment,
-    chat_id         INTEGER,
+    chat_id         BIGINT,
     chat_username   TEXT,
-    user_id         INTEGER,
+    user_id         BIGINT,
     username        TEXT,
     user_first_name TEXT,
     user_last_name  TEXT
@@ -47,10 +48,10 @@ create table table_users_private
 (
     id              INTEGER
         primary key auto_increment,
-    user_id         INTEGER,
+    user_id         BIGINT,
     password        TEXT,
     username        TEXT,
     user_first_name TEXT,
     user_last_name  TEXT,
-    date            INTEGER
+    date            DATETIME
 );

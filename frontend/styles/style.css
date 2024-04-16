@@ -1,117 +1,39 @@
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #ffffff;
-    /* Белый фон */
-  }
-  
-  #app {
-    max-width: 800px;
-    margin: 20px auto;
-    padding: 0 20px;
-  }
-  
-  .posts {
-    border: 1px solid #87CEEB;
-    /* Голубая рамка */
-    border-radius: 5px;
-    margin-bottom: 20px;
-    padding: 10px;
-    background-color: #f0f8ff;
-    /* Голубой фон */
-  }
-  
-  .posts p {
-    margin: 5px 0;
-  }
-  
-  .posts p:first-child {
-    font-weight: bold;
-  }
-  
-  .posts p:nth-child(2) {
-    font-style: italic;
-  }
-  
-  .posts p:nth-child(3) {
-    color: #333;
-  }
-  
-  h1 {
-    text-align: center;
-    color: #4682b4;
-    /* Голубой цвет для заголовка */
-  }
-  
-  
-  .panel button {
-    background-color: #fff;
-    border: 2px solid #4682b4;
-    border-radius: 18px;
-    color: #4682b4;
-    padding: 8px 16px;
-    border-color: #fff;
-    margin: 5px;
-    cursor: pointer;
-    font-size: 12pt;
-  }
-  
-  .panel p {
-    color: white
-  }
-  
-  .panel button:hover {
-    background-color: #4682b4;
-    color: #fff;
-  }
-  
-  /* Стили для выпадающего списка */
-  .dropdown {
-    position: relative;
-    display: inline-block;
-  }
-  
-  .dropdown-content {
-    display: none;
-    position: absolute;
-    background-color: #f9f9f9;
-    min-width: 160px;
-    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2);
-    z-index: 1;
-  }
-  
-  .dropdown-content a {
-    color: black;
-    padding: 12px 16px;
-    text-decoration: none;
-    display: block;
-  }
-  
-  .dropdown-content a:hover {
-    background-color: #f1f1f1;
-  }
-  
-  .dropdown:hover .dropdown-content {
-    display: block;
-  }
-  
-  .post {
-    background-color: #f0f0f0;
-    /* Цвет фона */
-    border-radius: 5px;
-    /* Закругление углов */
-    padding: 20px;
-    /* Внутренний отступ */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    /* Тень */
-    margin-bottom: 20px;
-    /* Внешний отступ снизу */
-  }
-  
-  .post p {
-    margin: 3px;
-    /* Убираем внешние отступы для параграфов внутри .post */
-  }
-  
-  /* Если нужно изменить стили для определенных параграфов внутри .post, добавьте классы или селекторы здесь */
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #ffffff;
+}
+
+#app {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 0 20px;
+}
+
+h1 {
+  text-align: center;
+  color: #4682b4;
+}
+
+
+.panel button {
+  background-color: #fff;
+  border: 2px solid #4682b4;
+  border-radius: 18px;
+  color: #4682b4;
+  padding: 8px 16px;
+  border-color: #fff;
+  margin: 5px;
+  cursor: pointer;
+  font-size: 12pt;
+}
+
+.panel p {
+  color: white
+}
+
+.panel button:hover {
+  background-color: #4682b4;
+  color: #fff;
+}

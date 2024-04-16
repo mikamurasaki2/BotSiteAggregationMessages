@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title></title>
   <link rel="stylesheet" href="styles/style.css">
+  <link rel="stylesheet" href="styles/index.css">
 </head>
 
 <body>
@@ -20,7 +21,9 @@
       <div class="dropdown">
         <button class="dropbtn">Выберите чат</button>
         <div class="dropdown-content">
-          <a v-for="chat in chats" @click="selectChat(chat)">{{ chat }}</a>
+          <a v-for="chat in chats" @click="selectChat(chat)">{{ chat }}
+            <img v-if="selected_chats.includes(chat)" src="img/checkmark.png" alt="Checkmark" width="20">
+          </a>
         </div>
       </div>
     </div>
@@ -29,7 +32,8 @@
       <p>{{ item.username }}</p>
       <p>{{ item.date }}</p>
       <p>{{ item.text }}</p>
-      <p>Chat ID: {{ item.chat_id }}</p>
+      <p>Чат: {{ item.chatname }}</p>
+      <button @click="select_post(item.id)">Ответить</button>
     </div>
   </div>
 
@@ -50,16 +54,15 @@
       mounted() {
         this.get_chats()
         this.sortByDate()
-        // this.fetchData()
       },
       methods: {
-        request(type, method, args = ['']) {
+        request_get(method, args = ['']) {
           return new Promise((resolve, reject) => {
             const options = args.join('&');
             const xhr = new XMLHttpRequest();
             const url = 'http://127.0.0.1:8000/' + method + '?' + options;
             console.log(url)
-            xhr.open(type, url, true);
+            xhr.open('GET', url, true);
             xhr.onreadystatechange = () => {
               if (xhr.readyState === 4) {
                 if (xhr.status === 200) {
@@ -77,13 +80,13 @@
           if (chats.length > 0) {
             chats_param = `chat_id=${chats.join('&chat_id=')}`
           } else { chats_param = '' }
-          this.request('GET', 'get_messages', [`des=${desc_option}`, chats_param])
+          this.request_get('get_messages', [`des=${desc_option}`, chats_param])
             .then(data => {
               this.data = data;
             })
         },
         get_chats() {
-          this.request('GET', 'get_chats')
+          this.request_get('get_chats')
             .then(data => {
               this.chats = data;
             });
@@ -105,6 +108,9 @@
             this.selected_chats = this.selected_chats.filter(selectedChat => selectedChat !== chat);
           }
           this.fetchData(this.selected_chats, this.desc_option);
+        },
+        select_post(post_id) {
+          window.location.href = `post.html?post_id=${post_id}`;
         }
       }
     });
