@@ -14,6 +14,7 @@
     <div id="app">
         <div class="panel" style="background-color: #4682b4; padding: 10px; margin-bottom: 20px;">
             <button @click="go_back()">Назад</button>
+            <button @click="login()" class="login_btn">Войти</button>
         </div>
 
         <div class="post">
@@ -102,6 +103,7 @@
                     };
 
                     this.request_post('new_reply/', postData)
+                    window.location.reload();
                 },
                 get_post(id) {
                     this.request_get(`get_message/${id}`).then(
@@ -117,6 +119,9 @@
                 },
                 go_back() {
                     window.location.href = "index.html";
+                },
+                login() {
+                    window.location.href = "login.html"
                 },
                 parse_post_id() {
                     urlParams = new URLSearchParams(window.location.search);

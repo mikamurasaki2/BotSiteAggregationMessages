@@ -26,6 +26,7 @@
           </a>
         </div>
       </div>
+      <button @click="login()" class="login_btn">Войти</button>
     </div>
 
     <div v-for="item in data" class="posts">
@@ -84,6 +85,9 @@
             .then(data => {
               this.data = data;
             })
+        },
+        login() {
+          window.location.href = "login.html"
         },
         get_chats() {
           this.request_get('get_chats')

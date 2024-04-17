@@ -39,24 +39,6 @@ class Message(Base):
     date = Column(Integer)
 
 
-# class Reply(Base):
-#     __tablename__ = 'table_replies'
-#
-#     id = Column(Integer, primary_key=True, autoincrement=True)
-#     message_id = Column(Integer)
-#     chat_id = Column(Integer)
-#     user_id = Column(Integer)
-#     message_text = Column(Text)
-#     chat_username = Column(String)
-#     username = Column(String)
-#     date = Column(Integer)
-#     replied_to_user_id = Column(Integer)
-#     replied_to_message_text = Column(Text)
-#     replied_to_message_id = Column(Integer)
-#     replied_to_message_date = Column(Text)
-#     post_id = Column(Integer)
-
-
 class User(Base):
     __tablename__ = 'table_users'
 
@@ -74,7 +56,7 @@ class PrivateUser(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer)
-    password = Column(Text)
+    password = Column(String)
     username = Column(String)
     user_first_name = Column(String)
     user_last_name = Column(String)

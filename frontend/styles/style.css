@@ -37,3 +37,7 @@ h1 {
   background-color: #4682b4;
   color: #fff;
 }
+
+.login_btn {
+  float: right;
+}

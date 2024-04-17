@@ -129,3 +129,11 @@ async def add_reply(reply: models.Reply_Insert, db: Session = Depends(get_db)):
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"An error occurred while adding reply: {str(e)}")
+    
+    
+# @app.post("/login/")
+# async def login(username: str, password: str, db: Session = Depends(get_db)):
+#     user = db.query(models.PrivateUser).filter(models.PrivateUser.username == username).first()
+#     if user is None or user.password != password:
+#         raise HTTPException(status_code=401, detail="Неверное имя пользователя или пароль")
+#     return {"username": user.username, "user_id": user.user_id}
