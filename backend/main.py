@@ -10,7 +10,7 @@ import models as models
 
 # Подключение к локальному серверу
 app = FastAPI()
-engine = create_engine('mysql+mysqlconnector://root:@localhost/maindb5')
+engine = create_engine('mysql+mysqlconnector://root:@localhost/maindb6')
 
 Session = sessionmaker(bind=engine)
 
