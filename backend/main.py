@@ -1,16 +1,37 @@
-from fastapi import FastAPI, Depends, Query, HTTPException
+from fastapi import (
+    FastAPI,
+    Depends,
+    Query,
+    HTTPException,
+    Path,
+    status)
 from sqlalchemy import create_engine, desc
 from sqlalchemy.orm import sessionmaker
 from starlette.middleware.cors import CORSMiddleware
 from datetime import datetime
 from typing import List
 from math import floor
+from pydantic import BaseModel, field_validator, Field
+from fastapi.security import OAuth2PasswordBearer
 
 import models as models
+
+from backend.utils import (
+    verify_password,
+    get_hashed_password,
+    create_access_token,
+    create_refresh_token,
+    validate_token
+)
+
 
 # Подключение к локальному серверу
 app = FastAPI()
 engine = create_engine('mysql+mysqlconnector://root:@localhost/maindb6')
+reuseable_oauth = OAuth2PasswordBearer(
+    tokenUrl="/login",
+    scheme_name="JWT"
+)
 
 Session = sessionmaker(bind=engine)
 
@@ -119,7 +140,8 @@ async def get_replies(replies: dict = Depends(get_replies)):
 
 
 @app.post("/new_reply/")
-async def add_reply(reply: models.Reply_Insert, db: Session = Depends(get_db)):
+async def add_reply(reply: models.Reply_Insert, db: Session = Depends(get_db), token: str = Depends(reuseable_oauth)):
+    validate_token(token)
     try:
         db_reply = models.Reply(**reply.dict(), date=get_date())
         db.add(db_reply)
@@ -129,11 +151,26 @@ async def add_reply(reply: models.Reply_Insert, db: Session = Depends(get_db)):
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"An error occurred while adding reply: {str(e)}")
-    
-    
-# @app.post("/login/")
-# async def login(username: str, password: str, db: Session = Depends(get_db)):
-#     user = db.query(models.PrivateUser).filter(models.PrivateUser.username == username).first()
-#     if user is None or user.password != password:
-#         raise HTTPException(status_code=401, detail="Неверное имя пользователя или пароль")
-#     return {"username": user.username, "user_id": user.user_id}
+
+
+class User(BaseModel):
+    username: str = Field(min_length=5)
+    password: str = Field(min_length=6)
+
+    @field_validator("username")
+    @classmethod
+    def validate_username(cls, v) -> str:
+        if not v.isalnum():
+            raise ValueError("Username must contain only letters and digits")
+        return v
+
+
+@app.post("/login/")
+async def login(view_user: User, db: Session = Depends(get_db)):
+    user = db.query(models.PrivateUser).filter(models.PrivateUser.username == view_user.username).first()
+    if user is None or user.password != view_user.password:
+        raise HTTPException(status_code=401, detail="Неверное имя пользователя или пароль")
+    return {
+        "access_token": create_access_token(user.username),
+        "refresh_token": create_refresh_token(user.username),
+    }

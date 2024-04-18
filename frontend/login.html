@@ -40,29 +40,37 @@
             data() {
                 return {
                     username: '',
-                    password: ''
+                    password: '',
+                    token: ''
                 };
             },
             mounted() {
 
             },
             methods: {
+                setCookie(name, value, days) {
+                    var expires = "";
+                    if (days) {
+                        var date = new Date();
+                        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                        expires = "; expires=" + date.toUTCString();
+                    }
+                    document.cookie = name + "=" + value + expires + "; path=/";
+                },
                 login() {
-                    // Отправка запроса на сервер для авторизации
                     const userData = {
                         username: this.username,
                         password: this.password
                     };
                     this.request_post('login', userData)
                         .then(response => {
-                            // Обработка успешной авторизации
+                            this.token = response['access_token']
+                            this.setCookie('token', this.token, 30)
                             console.log('Авторизация успешна:', response);
-                            // Перенаправление на другую страницу или выполнение других действий
                         })
                         .catch(error => {
-                            // Обработка ошибки авторизации
                             console.error('Ошибка авторизации:', error);
-                            // Возможно, вывод сообщения об ошибке пользователю
+                            alert('Ошибка авторизации')
                         });
                 },
                 request_get(method, args = ['']) {

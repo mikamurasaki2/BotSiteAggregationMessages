@@ -49,14 +49,26 @@
           selected_chats: [],
           chats: [],
           data: [],
-          desc_option: 'false'
+          desc_option: 'false',
+          token: ''
         };
       },
       mounted() {
         this.get_chats()
         this.sortByDate()
+        this.token = this.getCookie('token')
       },
       methods: {
+        getCookie(name) {
+          var nameEQ = name + "=";
+          var ca = document.cookie.split(';');
+          for (var i = 0; i < ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+          }
+          return null;
+        },
         request_get(method, args = ['']) {
           return new Promise((resolve, reject) => {
             const options = args.join('&');
