@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from typing import Optional
 
 def read_json_field(field_name):
-    with open("backend/JWTKeys.json", 'r') as file:
+    with open("JWTKeys.json", 'r') as file:
         data = json.load(file)
     return data.get(field_name)
 

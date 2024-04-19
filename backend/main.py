@@ -16,7 +16,7 @@ from fastapi.security import OAuth2PasswordBearer
 
 import models as models
 
-from backend.utils import (
+from utils import (
     verify_password,
     get_hashed_password,
     create_access_token,
@@ -88,6 +88,15 @@ def get_all_chats(db: Session = Depends(get_db)):
 def get_post(msg_id, db: Session = Depends(get_db)):
     return db.query(models.Message).filter(models.Message.id == msg_id).first()
 
+# Удалить пост
+def delete_post(msg_id, db: Session = Depends(get_db)):
+    post = db.query(models.Message).filter(models.Message.id == msg_id).first()
+    if post:
+        db.delete(post)
+        db.commit()
+        return 0
+    else:
+        return 1
 
 def get_replies(msg_id, db: Session = Depends(get_db)):
     return db.query(models.Reply).filter(models.Reply.post_id == msg_id).all()
@@ -124,6 +133,23 @@ async def get_message(post: dict = Depends(get_post)):
         'chat_id': post.chat_id
     }
     
+
+@app.delete("/delete_message/{msg_id}")
+async def delete_message(msg_id: int = Path(...)):
+    try:
+        res = delete_post(msg_id)
+        if res == 0:
+            return {"message": msg_id}
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Message with ID {msg_id} not found",
+            )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error",
+        )
 
 @app.get("/get_replies/{msg_id}")
 async def get_replies(replies: dict = Depends(get_replies)):
