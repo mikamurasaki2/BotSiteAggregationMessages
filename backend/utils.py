@@ -8,10 +8,12 @@ from fastapi import HTTPException, status
 from pydantic import BaseModel
 from typing import Optional
 
+
 def read_json_field(field_name):
     with open("JWTKeys.json", 'r') as file:
         data = json.load(file)
     return data.get(field_name)
+
 
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 ACCESS_TOKEN_EXPIRE_MINUTES = read_json_field("ACCESS_TOKEN_EXPIRE_MINUTES")
@@ -19,6 +21,7 @@ JWT_SECRET_KEY = read_json_field("JWT_SECRET_KEY")
 ALGORITHM = read_json_field("ALGORITHM")
 REFRESH_TOKEN_EXPIRE_MINUTES = read_json_field("REFRESH_TOKEN_EXPIRE_MINUTES")
 JWT_REFRESH_SECRET_KEY = read_json_field("JWT_REFRESH_SECRET_KEY")
+
 
 def create_access_token(subject: Union[str, Any], expires_delta: int = None) -> str:
     if expires_delta is not None:
@@ -41,6 +44,7 @@ def create_refresh_token(subject: Union[str, Any], expires_delta: int = None) ->
     encoded_jwt = jwt.encode(to_encode, JWT_REFRESH_SECRET_KEY, ALGORITHM)
     return encoded_jwt
 
+
 def get_hashed_password(password: str) -> str:
     return password_context.hash(password)
 
@@ -48,9 +52,11 @@ def get_hashed_password(password: str) -> str:
 def verify_password(password: str, hashed_pass: str) -> bool:
     return password_context.verify(password, hashed_pass)
 
+
 class TokenPayload(BaseModel):
     exp: Optional[int] = None
     sub: Optional[str] = None
+
 
 def validate_token(token: str):
     try:

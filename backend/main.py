@@ -27,11 +27,19 @@ from utils import (
 
 # Подключение к локальному серверу
 app = FastAPI()
-engine = create_engine('mysql+mysqlconnector://root:@localhost/maindb6')
+# engine = create_engine('mysql+mysqlconnector://root:@localhost/maindb6')
+# reuseable_oauth = OAuth2PasswordBearer(
+#     tokenUrl="/login",
+#     scheme_name="JWT"
+# )
+app = FastAPI()
+engine = create_engine('mysql+mysqlconnector://root:root@localhost/maindb')
 reuseable_oauth = OAuth2PasswordBearer(
     tokenUrl="/login",
     scheme_name="JWT"
 )
+
+
 
 Session = sessionmaker(bind=engine)
 
@@ -102,8 +110,9 @@ def get_replies(msg_id, db: Session = Depends(get_db)):
     return db.query(models.Reply).filter(models.Reply.post_id == msg_id).all()
 
 # Получаем вопросы-посты
-@app.get("/get_messages")
-async def get_messages(posts: list = Depends(get_all_posts)):
+@app.get("/api/get_messages")
+async def get_messages(posts: list = Depends(get_all_posts), token: str = Depends(reuseable_oauth)):
+    validate_token(token)
     return [
         {
             'username': post.username,
@@ -116,25 +125,27 @@ async def get_messages(posts: list = Depends(get_all_posts)):
         for post in posts
     ]
 
-
 # Получаем все айди чатов. В будущем заменить на названия чатов
-@app.get("/get_chats")
-async def get_chats(chats: list = Depends(get_all_chats)):
+@app.get("/api/get_chats")
+async def get_chats(chats: list = Depends(get_all_chats), token: str = Depends(reuseable_oauth)):
+    validate_token(token)
     return [chat.chat_id for chat in chats]
 
 
 # Получаем сведения о посте с вопросом
-@app.get("/get_message/{msg_id}")
-async def get_message(post: dict = Depends(get_post)):
+@app.get("/api/get_message/{msg_id}")
+async def get_message(post: dict = Depends(get_post), token: str = Depends(reuseable_oauth)):
+    validate_token(token)
     return {
         'username': post.username,
         'date': parse_timestamp(post.date),
         'text': post.message_text,
         'chat_id': post.chat_id
     }
+
     
 
-@app.delete("/delete_message/{msg_id}")
+@app.delete("/api/delete_message/{msg_id}")
 async def delete_message(msg_id: int = Path(...)):
     try:
         res = delete_post(msg_id)
@@ -151,8 +162,9 @@ async def delete_message(msg_id: int = Path(...)):
             detail="Internal server error",
         )
 
-@app.get("/get_replies/{msg_id}")
-async def get_replies(replies: dict = Depends(get_replies)):
+@app.get("/api/get_replies/{msg_id}")
+async def get_replies(replies: dict = Depends(get_replies), token: str = Depends(reuseable_oauth)):
+    validate_token(token)
     return [
         {
             'username': reply.username,
@@ -165,7 +177,7 @@ async def get_replies(replies: dict = Depends(get_replies)):
     ]
 
 
-@app.post("/new_reply/")
+@app.post("/api/new_reply/")
 async def add_reply(reply: models.Reply_Insert, db: Session = Depends(get_db), token: str = Depends(reuseable_oauth)):
     validate_token(token)
     try:
@@ -191,7 +203,7 @@ class User(BaseModel):
         return v
 
 
-@app.post("/login/")
+@app.post("/api/login/")
 async def login(view_user: User, db: Session = Depends(get_db)):
     user = db.query(models.PrivateUser).filter(models.PrivateUser.username == view_user.username).first()
     if user is None or user.password != view_user.password:

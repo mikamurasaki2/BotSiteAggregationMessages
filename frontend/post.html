@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title></title>
+    <link rel="icon" href="img/school.png" type="image/png">
+    <title>Публикация</title>
     <link rel="stylesheet" href="styles/style.css">
     <link rel="stylesheet" href="styles/post.css">
 </head>
@@ -49,12 +50,22 @@
                     desc_option: 'false',
                     answerText: '',
                     post_id: 0,
-                    token: ''
+                    token: '',
+                    headers: {},
+                    username: ''
                 };
             },
             mounted() {
-                this.parse_post_id()
                 this.token = this.getCookie('token')
+                this.username = this.getCookie('username')
+                if (this.token != '') {
+                    this.button_text = 'Выйти'
+                }
+                this.headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + this.token
+                };
+                this.parse_post_id()
             },
             methods: {
                 getCookie(name) {
@@ -67,13 +78,15 @@
                     }
                     return null;
                 },
-                request_get(method, args = ['']) {
+                request_get(method, args = [''], headers = {}) {
                     return new Promise((resolve, reject) => {
                         const options = args.join('&');
                         const xhr = new XMLHttpRequest();
-                        const url = 'http://127.0.0.1:8000/' + method + '?' + options;
-                        console.log(url)
+                        const url = 'http://45.146.164.205/api/' + method + '?' + options;
                         xhr.open('GET', url, true);
+                        Object.keys(headers).forEach(key => {
+                            xhr.setRequestHeader(key, headers[key]);
+                        });
                         xhr.onreadystatechange = () => {
                             if (xhr.readyState === 4) {
                                 if (xhr.status === 200) {
@@ -90,9 +103,8 @@
                 request_post(method, data = {}, headers = {}) {
                     return new Promise((resolve, reject) => {
                         const xhr = new XMLHttpRequest();
-                        const url = 'http://127.0.0.1:8000/' + method;
+                        const url = 'http://45.146.164.205/api/' + method;
                         xhr.open('POST', url, true);
-                        // Установка переданных заголовков
                         Object.keys(headers).forEach(key => {
                             xhr.setRequestHeader(key, headers[key]);
                         });
@@ -113,40 +125,35 @@
                     postData = {
                         "message_text": this.answerText,
                         "chat_id": 123,
-                        "username": "john_doe",
+                        "username": this.username,
                         "post_id": this.post_id
                     };
 
-                    const headers = {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTMzNjQ0MjksInN1YiI6InVzZXIxIn0.yvUgooYc1Eq9Jqze3pguul-dApZRjhVhqn8uhy_AvxA"
-                    };
-
-                    this.request_post('new_reply/', postData, headers)
+                    this.request_post('new_reply/', postData, this.headers)
                         .then(() => {
-
+                            window.location.reload();
                         })
                         .catch(error => {
                             console.error('Ошибка при отправке ответа:', error);
                         });
                 },
                 get_post(id) {
-                    this.request_get(`get_message/${id}`).then(
+                    this.request_get(`get_message/${id}`, [], this.headers).then(
                         data => {
                             this.data = data;
                         })
                 },
                 get_replies(id) {
-                    this.request_get(`get_replies/${id}`).then(
+                    this.request_get(`get_replies/${id}`, [], this.headers).then(
                         data => {
                             this.replies = data;
                         })
                 },
                 go_back() {
-                    window.location.href = "index.html";
+                    window.location.href = "/";
                 },
                 login() {
-                    window.location.href = "login.html"
+                    window.location.href = "login"
                 },
                 parse_post_id() {
                     urlParams = new URLSearchParams(window.location.search);

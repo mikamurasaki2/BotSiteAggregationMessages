@@ -4,7 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title></title>
+  <link rel="icon" href="img/school.png" type="image/png">
+  <title>Students Forum</title>
   <link rel="stylesheet" href="styles/style.css">
   <link rel="stylesheet" href="styles/index.css">
 </head>
@@ -26,7 +27,7 @@
           </a>
         </div>
       </div>
-      <button @click="login()" class="login_btn">Войти</button>
+      <button @click="login()" class="login_btn">{{ button_text }}</button>
     </div>
 
     <div v-for="item in data" class="posts">
@@ -45,18 +46,28 @@
       el: '#app',
       data() {
         return {
+          button_text: 'Выйти',
           rotation_date: 0,
           selected_chats: [],
           chats: [],
           data: [],
           desc_option: 'false',
-          token: ''
+          token: '',
+          headers: {}
         };
       },
       mounted() {
+        this.token = this.getCookie('token')
+        // console.log(token)
+        if (this.token == '') {
+          this.button_text = 'Войти'
+        }
+        this.headers = {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + this.token
+        };
         this.get_chats()
         this.sortByDate()
-        this.token = this.getCookie('token')
       },
       methods: {
         getCookie(name) {
@@ -67,15 +78,17 @@
             while (c.charAt(0) == ' ') c = c.substring(1, c.length);
             if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
           }
-          return null;
+          return "";
         },
-        request_get(method, args = ['']) {
+        request_get(method, args = [''], headers = {}) {
           return new Promise((resolve, reject) => {
             const options = args.join('&');
             const xhr = new XMLHttpRequest();
-            const url = 'http://127.0.0.1:8000/' + method + '?' + options;
-            console.log(url)
+            const url = 'http://45.146.164.205/api/' + method + '?' + options;
             xhr.open('GET', url, true);
+            Object.keys(headers).forEach(key => {
+              xhr.setRequestHeader(key, headers[key]);
+            });
             xhr.onreadystatechange = () => {
               if (xhr.readyState === 4) {
                 if (xhr.status === 200) {
@@ -93,16 +106,21 @@
           if (chats.length > 0) {
             chats_param = `chat_id=${chats.join('&chat_id=')}`
           } else { chats_param = '' }
-          this.request_get('get_messages', [`des=${desc_option}`, chats_param])
+          this.request_get('get_messages', [`des=${desc_option}`, chats_param], this.headers)
             .then(data => {
               this.data = data;
             })
         },
         login() {
-          window.location.href = "login.html"
+          if (this.token == '') {
+            window.location.href = "/login"
+          } else {
+            this.clearAllCookies()
+            window.location.href = "/login"
+          }
         },
         get_chats() {
-          this.request_get('get_chats')
+          this.request_get('get_chats', [], this.headers)
             .then(data => {
               this.chats = data;
             });
@@ -126,7 +144,17 @@
           this.fetchData(this.selected_chats, this.desc_option);
         },
         select_post(post_id) {
-          window.location.href = `post.html?post_id=${post_id}`;
+          window.location.href = `post?post_id=${post_id}`;
+        },
+        clearAllCookies() {
+          var cookies = document.cookie.split(";");
+
+          for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i];
+            var eqPos = cookie.indexOf("=");
+            var name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+            document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;";
+          }
         }
       }
     });

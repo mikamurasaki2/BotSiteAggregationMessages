@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="img/school.png" type="image/png">
     <title>Авторизация</title>
     <link rel="stylesheet" href="styles/style.css">
     <link rel="stylesheet" href="styles/login.css">
@@ -66,7 +67,10 @@
                         .then(response => {
                             this.token = response['access_token']
                             this.setCookie('token', this.token, 30)
+                            this.setCookie('username', this.username, 30)
+                            this.setCookie('password', this.password, 30)
                             console.log('Авторизация успешна:', response);
+                            window.location.href = '/'
                         })
                         .catch(error => {
                             console.error('Ошибка авторизации:', error);
@@ -77,8 +81,7 @@
                     return new Promise((resolve, reject) => {
                         const options = args.join('&');
                         const xhr = new XMLHttpRequest();
-                        const url = 'http://127.0.0.1:8000/' + method + '?' + options;
-                        console.log(url)
+                        const url = 'http://45.146.164.205/api/' + method + '?' + options;
                         xhr.open('GET', url, true);
                         xhr.onreadystatechange = () => {
                             if (xhr.readyState === 4) {
@@ -96,7 +99,7 @@
                 request_post(method, data = {}) {
                     return new Promise((resolve, reject) => {
                         const xhr = new XMLHttpRequest();
-                        const url = 'http://127.0.0.1:8000/' + method;
+                        const url = 'http://45.146.164.205/api/' + method;
                         xhr.open('POST', url, true);
                         xhr.setRequestHeader('Content-Type', 'application/json');
                         xhr.onreadystatechange = () => {
@@ -113,7 +116,7 @@
                     });
                 },
                 go_back() {
-                    window.location.href = "index.html";
+                    window.location.href = "/";
                 },
             }
         });

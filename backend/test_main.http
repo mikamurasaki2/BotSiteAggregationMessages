@@ -1,0 +1,15 @@
+POST http://45.146.164.205/api/login
+Content-Type: application/json
+
+{
+  "username": "user1",
+  "password": "testpass"
+}
+
+###
+# Test your FastAPI endpoints
+
+GET http://45.146.164.205/api/get_messages
+Accept: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTM1OTg4NTUsInN1YiI6InVzZXIxIn0.5FoZH6bgapRU2jXXZXAwnks-mYsyLGvKKsvkO9UDez8
+###
