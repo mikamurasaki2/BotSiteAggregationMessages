@@ -1,5 +1,5 @@
-# CREATE DATABASE maindb;
-
+CREATE DATABASE maindb;
+Use maindb;
 
 create table table_messages
 (
@@ -11,7 +11,7 @@ create table table_messages
     message_text  TEXT,
     chat_username TEXT,
     username      TEXT,
-    date          DATETIME
+    date          INTEGER
 );
 
 create table table_replies
@@ -24,12 +24,12 @@ create table table_replies
     message_text            TEXT,
     chat_username           TEXT,
     username                TEXT,
-    date                    DATETIME,
+    date                    INTEGER,
     replied_to_user_id      BIGINT,
     replied_to_message_text TEXT,
     replied_to_message_id   BIGINT,
     replied_to_message_date TEXT,
-    post_id integer references table_messages(id)
+    post_id                 BIGINT references table_messages (id)
 );
 
 create table table_users
@@ -41,7 +41,8 @@ create table table_users
     user_id         BIGINT,
     username        TEXT,
     user_first_name TEXT,
-    user_last_name  TEXT
+    user_last_name  TEXT,
+    is_admin        BOOLEAN
 );
 
 create table table_users_private
@@ -53,5 +54,6 @@ create table table_users_private
     username        TEXT,
     user_first_name TEXT,
     user_last_name  TEXT,
-    date            DATETIME
+    date            BIGINT,
+    is_admin        BOOLEAN
 );

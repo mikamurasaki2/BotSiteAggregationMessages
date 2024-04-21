@@ -26,7 +26,7 @@ from utils import (
 
 
 # Подключение к локальному серверу
-app = FastAPI()
+#app = FastAPI()
 # engine = create_engine('mysql+mysqlconnector://root:@localhost/maindb6')
 # reuseable_oauth = OAuth2PasswordBearer(
 #     tokenUrl="/login",
