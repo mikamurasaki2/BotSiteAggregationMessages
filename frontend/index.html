@@ -31,6 +31,7 @@
     </div>
 
     <div v-for="item in data" class="posts">
+      <button v-if="adm_options==true" @click="delete_post(item.id)" class="del_btn">Удалить</button>
       <p>{{ item.username }}</p>
       <p>{{ item.date }}</p>
       <p>{{ item.text }}</p>
@@ -53,15 +54,21 @@
           data: [],
           desc_option: 'false',
           token: '',
-          headers: {}
+          headers: {},
+          admin_token: '',
+          adm_options: false
         };
       },
       mounted() {
         this.token = this.getCookie('token')
-        // console.log(token)
+        this.admin_token = this.getCookie('admin_token')
         if (this.token == '') {
           this.button_text = 'Войти'
         }
+        if (this.admin_token != '') {
+          this.adm_options = true
+        }
+
         this.headers = {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + this.token
@@ -70,6 +77,38 @@
         this.sortByDate()
       },
       methods: {
+        delete_post(post_id) {
+          if (confirm('Вы уверены, что хотите удалить этот пост?')) {
+            this.request_delete('delete_message/' + post_id, this.headers)
+              .then(response => {
+                alert('Пост успешно удален.');
+                this.fetchData(this.selected_chats, this.desc_option);
+              })
+              .catch(error => {
+                console.error('Ошибка при удалении поста:', error);
+                alert('Произошла ошибка при удалении поста.');
+              });
+          }
+        },
+        request_delete(url, headers = {}) {
+          return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('DELETE', 'http://31.129.96.68/api/' + url, true);
+            Object.keys(headers).forEach(key => {
+              xhr.setRequestHeader(key, headers[key]);
+            });
+            xhr.onreadystatechange = () => {
+              if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                  resolve(xhr.responseText);
+                } else {
+                  reject('Request failed with status: ' + xhr.status);
+                }
+              }
+            };
+            xhr.send();
+          });
+        },
         getCookie(name) {
           var nameEQ = name + "=";
           var ca = document.cookie.split(';');
@@ -84,7 +123,7 @@
           return new Promise((resolve, reject) => {
             const options = args.join('&');
             const xhr = new XMLHttpRequest();
-            const url = 'https://31.129.96.68/api/' + method + '?' + options;
+            const url = 'http://31.129.96.68/api/' + method + '?' + options;
             xhr.open('GET', url, true);
             Object.keys(headers).forEach(key => {
               xhr.setRequestHeader(key, headers[key]);

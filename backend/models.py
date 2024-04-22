@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text
+from sqlalchemy import Column, Integer, String, Text, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from pydantic import BaseModel
 
@@ -61,3 +61,4 @@ class PrivateUser(Base):
     user_first_name = Column(String)
     user_last_name = Column(String)
     date = Column(Integer)
+    is_admin = Column(Boolean)

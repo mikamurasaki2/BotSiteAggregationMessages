@@ -66,9 +66,10 @@
                     this.request_post('login', userData)
                         .then(response => {
                             this.token = response['access_token']
+                            this.admin_token = response['admin_token']
                             this.setCookie('token', this.token, 30)
                             this.setCookie('username', this.username, 30)
-                            this.setCookie('password', this.password, 30)
+                            this.setCookie('admin_token', this.admin_token, 30)
                             console.log('Авторизация успешна:', response);
                             window.location.href = '/'
                         })
@@ -81,7 +82,7 @@
                     return new Promise((resolve, reject) => {
                         const options = args.join('&');
                         const xhr = new XMLHttpRequest();
-                        const url = 'https://31.129.96.68/api/' + method + '?' + options;
+                        const url = 'http://31.129.96.68/api/' + method + '?' + options;
                         xhr.open('GET', url, true);
                         xhr.onreadystatechange = () => {
                             if (xhr.readyState === 4) {
@@ -99,7 +100,7 @@
                 request_post(method, data = {}) {
                     return new Promise((resolve, reject) => {
                         const xhr = new XMLHttpRequest();
-                        const url = 'https://31.129.96.68/api/' + method;
+                        const url = 'http://31.129.96.68/api/' + method;
                         xhr.open('POST', url, true);
                         xhr.setRequestHeader('Content-Type', 'application/json');
                         xhr.onreadystatechange = () => {
