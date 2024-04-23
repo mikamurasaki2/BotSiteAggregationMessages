@@ -41,3 +41,7 @@ h1 {
 .login_btn {
   float: right;
 }
+
+.panel button.manage_btn {
+  border: 2px solid #e7aa01;
+}

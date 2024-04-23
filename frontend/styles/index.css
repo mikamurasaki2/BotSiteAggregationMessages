@@ -33,9 +33,17 @@
   margin: 5px;
   cursor: pointer;
   font-size: 12pt;
-  float: right; /* Add this line */
+  float: right;
 }
 
+.posts button.del_btn {
+  border: 2px solid rgb(196, 9, 9);
+  color: rgb(196, 9, 9);
+}
+
+.posts button.del_btn:hover {
+  background-color: rgb(196, 9, 9);
+}
 
 .posts button:hover {
   background-color: #4682b4;

@@ -28,6 +28,7 @@
         </div>
       </div>
       <button @click="login()" class="login_btn">{{ button_text }}</button>
+      <button  v-if="adm_options==true" @click="go_to_users()" class="manage_btn">Управление пользователями</button>
     </div>
 
     <div v-for="item in data" class="posts">
@@ -184,6 +185,9 @@
         },
         select_post(post_id) {
           window.location.href = `post?post_id=${post_id}`;
+        },
+        go_to_users() {
+          window.location.href = "users"
         },
         clearAllCookies() {
           var cookies = document.cookie.split(";");

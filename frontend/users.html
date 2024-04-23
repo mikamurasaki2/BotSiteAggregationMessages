@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="img/school.png" type="image/png">
+    <title>Students Forum</title>
+    <link rel="stylesheet" href="styles/style.css">
+    <link rel="stylesheet" href="styles/users.css">
+</head>
+
+<body>
+    <div id="app">
+        <div class="panel" style="background-color: #4682b4; padding: 10px; margin-bottom: 20px;">
+            <button @click="go_back()">Назад</button>
+            <button @click="login()" class="login_btn">{{button_text}}</button>
+        </div>
+
+        <div v-for="user in users" class="users">
+            <p>{{ user.user_id }}</p>
+            <p>{{ user.username }}</p>
+            <p>{{ user.is_admin }}</p>
+          </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+        <script>
+            new Vue({
+                el: '#app',
+                data() {
+                    return {
+                        token: '',
+                        headers: {},
+                        username: '',
+                        adm_options: false,
+                        admin_token: '',
+                        button_text: 'Войти',
+                        users: []
+                    };
+                },
+                mounted() {
+                    this.token = this.getCookie('token')
+                    this.username = this.getCookie('username')
+                    this.admin_token = this.getCookie('admin_token')
+                    console.log(this.token)
+                    if (this.token != '' || this.token != null) {
+                        this.button_text = 'Выйти'
+                    }
+                    this.headers = {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + this.token
+                    };
+                    this.get_users()
+                },
+                methods: {
+                    get_users() {
+                        this.request_get('get_users', [], this.headers)
+                            .then(data => {
+                                this.users = data;
+                            });
+                    },
+                    request_get(method, args = [''], headers = {}) {
+                        return new Promise((resolve, reject) => {
+                            const options = args.join('&');
+                            const xhr = new XMLHttpRequest();
+                            const url = 'http://31.129.96.68/api/' + method + '?' + options;
+                            xhr.open('GET', url, true);
+                            Object.keys(headers).forEach(key => {
+                                xhr.setRequestHeader(key, headers[key]);
+                            });
+                            xhr.onreadystatechange = () => {
+                                if (xhr.readyState === 4) {
+                                    if (xhr.status === 200) {
+                                        const responseData = JSON.parse(xhr.responseText);
+                                        resolve(responseData);
+                                    } else {
+                                        reject('Request failed with status: ' + xhr.status);
+                                    }
+                                }
+                            };
+                            xhr.send();
+                        });
+                    },
+                    getCookie(name) {
+                        var nameEQ = name + "=";
+                        var ca = document.cookie.split(';');
+                        for (var i = 0; i < ca.length; i++) {
+                            var c = ca[i];
+                            while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+                            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+                        }
+                        return null;
+                    },
+                    go_back() {
+                        window.location.href = "/";
+                    },
+                    login() {
+                        window.location.href = "login"
+                    },
+                }
+            });
+        </script>
+
+</body>
+
+</html>

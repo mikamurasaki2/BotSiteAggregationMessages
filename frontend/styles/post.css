@@ -27,6 +27,24 @@
     padding: 5px 0;
 }
 
+.replies button {
+    border: 2px solid rgb(196, 9, 9);
+    color: rgb(196, 9, 9);
+    background-color: #fff;
+    border-radius: 18px;
+    padding: 4px 12px;
+    border-color: rgb(196, 9, 9);
+    margin: 5px;
+    cursor: pointer;
+    font-size: 10pt;
+    float: right;
+}
+
+.replies button:hover {
+    background-color: rgb(196, 9, 9);
+    color: #fff;
+  }
+
 .replies p:first-child {
     background-color: #f0f0f0;
 }

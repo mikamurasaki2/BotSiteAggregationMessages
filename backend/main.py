@@ -89,6 +89,10 @@ def get_replies(msg_id, db: Session = Depends(get_db)):
     return db.query(models.Reply).filter(models.Reply.post_id == msg_id).all()
 
 
+def get_all_users(db: Session = Depends(get_db)):
+    return db.query(models.PrivateUser).distinct().all()
+
+
 @app.get("/api/get_messages")
 async def get_messages(posts: list = Depends(get_all_posts), token: str = Depends(reuseable_oauth)):
     validate_token(token)
@@ -122,6 +126,21 @@ async def get_message(post: dict = Depends(get_post), token: str = Depends(reuse
     }
 
 
+@app.get("/api/get_users")
+async def get_users(users: dict = Depends(get_all_users), token: str = Depends(reuseable_oauth)):
+    is_admin = validate_token(token)
+    if is_admin:
+        return [
+            {
+                "user_id": user.user_id,
+                "username": user.username,
+                "is_admin": user.is_admin
+            }
+            for user in users]
+    else:
+        raise HTTPException(status_code=403, detail=f"Auth Error. User is not admin")
+
+
 @app.delete("/api/delete_message/{msg_id}")
 async def delete_message(msg_id: int, token: str = Depends(reuseable_oauth),
                          db: Session = Depends(get_db)):
@@ -139,7 +158,7 @@ async def delete_message(msg_id: int, token: str = Depends(reuseable_oauth),
             db.rollback()
             raise HTTPException(status_code=500, detail=f"An error occurred while deleting message: {str(e)}")
     else:
-        raise HTTPException(status_code=500, detail=f"An error occurred while deleting message.")
+        raise HTTPException(status_code=403, detail=f"Auth Error. User is not admin")
 
 
 @app.delete("/api/delete_reply/{reply_id}")
@@ -191,8 +210,8 @@ async def add_reply(reply: models.Reply_Insert, db: Session = Depends(get_db), t
 
 
 class User(BaseModel):
-    username: str = Field(min_length=4)
-    password: str = Field(min_length=4)
+    username: str = Field(min_length=1)
+    password: str = Field(min_length=1)
 
     @field_validator("username")
     @classmethod
