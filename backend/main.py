@@ -78,7 +78,7 @@ def get_all_posts(chat_id: List[str] = Query(None), des='true', db: Session = De
 
 
 def get_all_chats(db: Session = Depends(get_db)):
-    return db.query(models.Message.chat_id).distinct().all()
+    return db.query(models.Message).distinct().all()
 
 
 def get_post(msg_id, db: Session = Depends(get_db)):
@@ -112,7 +112,12 @@ async def get_messages(posts: list = Depends(get_all_posts), token: str = Depend
 @app.get("/api/get_chats")
 async def get_chats(chats: list = Depends(get_all_chats), token: str = Depends(reuseable_oauth)):
     validate_token(token)
-    return [chat.chat_id for chat in chats]
+    return [
+        {
+            'chat_id': chat.chat_id,
+            'chat_username': chat.chat_username
+        }
+        for chat in chats]
 
 
 @app.get("/api/get_message/{msg_id}")
@@ -122,7 +127,8 @@ async def get_message(post: dict = Depends(get_post), token: str = Depends(reuse
         'username': post.username,
         'date': parse_timestamp(post.date),
         'text': post.message_text,
-        'chat_id': post.chat_id
+        'chat_id': post.chat_id,
+        'chatname': post.chat_username
     }
 
 
@@ -147,7 +153,7 @@ async def delete_message(msg_id: int, token: str = Depends(reuseable_oauth),
     is_admin = validate_token(token)
     if is_admin:
         try:
-            post = db.query(models.Message).filter(models.Message.id == msg_id).first()
+            post = db.query(models.Message).filter(models.Message.message_id == msg_id).first()
             if post:
                 db.delete(post)
                 db.commit()
@@ -223,7 +229,7 @@ class User(BaseModel):
 
 @app.post("/api/login/")
 async def login(view_user: User, db: Session = Depends(get_db)):
-    user = db.query(models.PrivateUser).filter(models.PrivateUser.username == view_user.username).first()
+    user = db.query(models.PrivateUser).filter(models.PrivateUser.user_id == view_user.username).first()
     if user is None or user.password != view_user.password:
         raise HTTPException(status_code=401, detail="Неверное имя пользователя или пароль")
     else:

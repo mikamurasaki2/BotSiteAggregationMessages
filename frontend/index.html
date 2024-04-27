@@ -22,20 +22,20 @@
       <div class="dropdown">
         <button class="dropbtn">Выберите чат</button>
         <div class="dropdown-content">
-          <a v-for="chat in chats" @click="selectChat(chat)">{{ chat }}
-            <img v-if="selected_chats.includes(chat)" src="img/checkmark.png" alt="Checkmark" width="20">
+          <a v-for="chat in chats" @click="selectChat(chat.chat_id)">{{ chat.chat_username }}
+            <img v-if="selected_chats.includes(chat.chat_id)" src="img/checkmark.png" alt="Checkmark" width="20">
           </a>
         </div>
       </div>
       <button @click="login()" class="login_btn">{{ button_text }}</button>
-      <button  v-if="adm_options==true" @click="go_to_users()" class="manage_btn">Управление пользователями</button>
+      <button v-if="adm_options==true" @click="go_to_users()" class="manage_btn">Управление пользователями</button>
     </div>
 
     <div v-for="item in data" class="posts">
       <button v-if="adm_options==true" @click="delete_post(item.id)" class="del_btn">Удалить</button>
       <p>{{ item.username }}</p>
       <p>{{ item.date }}</p>
-      <p>{{ item.text }}</p>
+      <p style="font-size: 18px;">{{ item.text }}</p>
       <p>Чат: {{ item.chatname }}</p>
       <button @click="select_post(item.id)">Ответить</button>
     </div>
