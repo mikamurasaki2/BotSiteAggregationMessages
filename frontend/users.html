@@ -20,8 +20,11 @@
         <div v-for="user in users" class="users">
             <p>{{ user.user_id }}</p>
             <p>{{ user.username }}</p>
-            <p>{{ user.is_admin }}</p>
-          </div>
+            <p v-if="user.is_admin">Роль: Админ</p>
+            <p v-if="!user.is_admin">Роль: Пользователь</p>
+            <button v-if="!user.is_admin" @click="make_admin()">Повысить</button>
+            <button v-if="user.is_admin && user.user_id!='1'" @click="remove_admin()">Разжалобить</button>
+        </div>
 
         <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
         <script>
@@ -35,7 +38,7 @@
                         adm_options: false,
                         admin_token: '',
                         button_text: 'Войти',
-                        users: []
+                        users: [],
                     };
                 },
                 mounted() {
@@ -97,6 +100,12 @@
                     login() {
                         window.location.href = "login"
                     },
+                    make_admin() {
+
+                    },
+                    remove_admin() {
+
+                    }
                 }
             });
         </script>

@@ -10,3 +10,20 @@
     margin: 0;
     padding: 5px 0;
 }
+
+.users button {
+    background-color: #fff;
+    border: 2px solid #e7aa01;
+    border-radius: 18px;
+    color: #474747;
+    padding: 8px 16px;
+    border-color: #e76101;
+    margin: 5px;
+    cursor: pointer;
+    font-size: 12pt;
+}
+
+.users button:hover {
+    background-color: #e76101;
+    color: #fff;
+}

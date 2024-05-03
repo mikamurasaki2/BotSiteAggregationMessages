@@ -215,6 +215,31 @@ async def add_reply(reply: models.Reply_Insert, db: Session = Depends(get_db), t
         raise HTTPException(status_code=500, detail=f"An error occurred while adding reply: {str(e)}")
 
 
+def change_admin_status(user_id: int, is_admin: int, db: Session = Depends(get_db)):
+    try:
+        # Находим пользователя по user_id
+        user = db.query(models.PrivateUser).filter(models.PrivateUser.user_id == user_id).first()
+        if user:
+            # Обновляем поле is_admin
+            user.is_admin = is_admin
+            db.commit()
+            return {"message": f"Admin status for user {user_id} updated successfully"}
+        else:
+            raise HTTPException(status_code=404, detail="User not found")
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"An error occurred while updating admin status: {str(e)}")
+
+
+@app.post("/api/change_admin_status/")
+async def change_admin(user_id: int, is_admin: int, token: str = Depends(reuseable_oauth)):
+    is_authenticated = validate_token(token)
+    if is_authenticated:
+        change_admin_status(user_id, is_admin)
+    else:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+
 class User(BaseModel):
     username: str = Field(min_length=1)
     password: str = Field(min_length=1)

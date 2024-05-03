@@ -43,7 +43,7 @@
 .replies button:hover {
     background-color: rgb(196, 9, 9);
     color: #fff;
-  }
+}
 
 .replies p:first-child {
     background-color: #f0f0f0;
