@@ -1,6 +1,7 @@
-from sqlalchemy import Column, Integer, String, Text, Boolean
+from sqlalchemy import Column, Integer, String, Text, Boolean, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from pydantic import BaseModel
+from sqlalchemy.orm import relationship
 
 month_names = ["января", "февраля", "марта", "апреля", "мая", "июня",
                "июля", "августа", "сентября", "октября", "ноября", "декабря"]
@@ -24,6 +25,8 @@ class Reply(Base):
     date = Column(Integer)
     post_id = Column(Integer)
     chat_id = Column(Integer)
+    user_id = Column(Integer, ForeignKey('table_users_private.user_id'))
+    user = relationship("PrivateUser")
 
 
 class Message(Base):
@@ -49,7 +52,6 @@ class User(Base):
     username = Column(String)
     user_first_name = Column(String)
     user_last_name = Column(String)
-    is_admin = Column(Boolean)
 
 
 class PrivateUser(Base):

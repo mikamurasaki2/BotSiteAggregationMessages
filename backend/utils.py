@@ -7,6 +7,9 @@ from pydantic import ValidationError
 from fastapi import HTTPException, status
 from pydantic import BaseModel
 from typing import Optional
+from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine
 
 
 def read_json_field(field_name):
@@ -21,6 +24,21 @@ JWT_SECRET_KEY = read_json_field("JWT_SECRET_KEY")
 ALGORITHM = read_json_field("ALGORITHM")
 REFRESH_TOKEN_EXPIRE_MINUTES = read_json_field("REFRESH_TOKEN_EXPIRE_MINUTES")
 JWT_REFRESH_SECRET_KEY = read_json_field("JWT_REFRESH_SECRET_KEY")
+
+reuseable_oauth = OAuth2PasswordBearer(
+    tokenUrl="/login",
+    scheme_name="JWT"
+)
+engine = create_engine('mysql+mysqlconnector://root:root@localhost/maindb')
+Session = sessionmaker(bind=engine)
+
+
+def get_db():
+    db = Session()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 def create_access_token(subject: Union[str, Any], expires_delta: int = None) -> str:

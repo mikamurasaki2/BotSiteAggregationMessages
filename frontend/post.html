@@ -19,7 +19,9 @@
         </div>
 
         <div class="post">
-            <p>{{ data.username }}</p>
+            <p v-if="data.name != null">{{ data.name }}</p>
+            <p v-if="data.last_name != null">{{ data.last_name }}</p>
+            <p v-if="data.name == null">{{ data.username }}</p>
             <p>{{ data.date }}</p>
             <p style="font-size: 18px;">{{ data.text }}</p>
             <p>Чат: {{ data.chatname }}</p>
@@ -28,6 +30,10 @@
         <div class="input_field">
             <input v-model="answerText" placeholder="Введите ответ на вопрос">
             <button class="send_btn" @click="add_answer()">Отправить</button>
+            <button class="checked_answers_btn" @click="get_checked_answers()">Проверенные ответы
+                <img v-if="checked_status" src="img/checkmark.png" alt="Checkmark" width="20">
+            </button>
+
         </div>
         <div v-for="reply in replies" class="replies">
             <button v-if="adm_options==true" @click="delete_reply(reply.id)">Удалить</button>
@@ -45,6 +51,7 @@
             el: '#app',
             data() {
                 return {
+                    checked_status: false,
                     rotation_date: 0,
                     data: [],
                     replies: [],
@@ -210,6 +217,18 @@
                         this.get_replies(postId)
                     } else {
                         console.error("Post ID not found in the URL.");
+                    }
+                },
+                get_checked_answers() {
+                    if (this.checked_status == false) {
+                        this.request_get(`get_replies/${this.post_id}`, ['admin_sort=true'], this.headers).then(
+                            data => {
+                                this.replies = data
+                                this.checked_status = true
+                                // window.location.reload()
+                            })
+                    } else {
+                        this.checked_status = false
                     }
                 },
                 clearAllCookies() {

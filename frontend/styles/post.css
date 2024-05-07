@@ -45,6 +45,10 @@
     color: #fff;
 }
 
+.checked_answers_btn button {
+    text-align: right;
+}
+
 .replies p:first-child {
     background-color: #f0f0f0;
 }
