@@ -33,7 +33,9 @@
 
     <div v-for="item in data" class="posts">
       <button v-if="adm_options==true" @click="delete_post(item.id)" class="del_btn">Удалить</button>
-      <p>{{ item.username }}</p>
+      <p v-if="item.name != null">{{ item.name }}</p>
+      <p v-if="item.last_name != null">{{ item.last_name }}</p>
+      <p v-if="item.name == null">{{ item.username }}</p>
       <p>{{ item.date }}</p>
       <p style="font-size: 18px;">{{ item.text }}</p>
       <p>Чат: {{ item.chatname }}</p>
@@ -162,9 +164,14 @@
         get_chats() {
           this.request_get('get_chats', [], this.headers)
             .then(data => {
-              this.chats = data;
+              // Фильтрация уникальных чатов
+              const uniqueChats = data.filter((chat, index, self) =>
+                index === self.findIndex(c => c.chat_id === chat.chat_id)
+              );
+              this.chats = uniqueChats;
             });
         },
+
         sortByDate() {
           if (this.desc_option == 'true') {
             this.desc_option = 'false'
