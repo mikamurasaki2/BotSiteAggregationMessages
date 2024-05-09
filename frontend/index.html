@@ -19,6 +19,7 @@
           :style="{ transform: 'rotate(' + rotation_date + 'deg)' }">
         Дата
       </button>
+
       <div class="dropdown">
         <button class="dropbtn">Выберите чат</button>
         <div class="dropdown-content">
@@ -27,7 +28,12 @@
           </a>
         </div>
       </div>
-      <button @click="login()" class="login_btn">{{ button_text }}</button>
+
+      <input type="date" id="date1" name="date1" v-model="end_date" @change="fetchDataByDate" />
+      <input type="date" id="date2" name="date2" v-model="start_date" @change="fetchDataByDate" />
+
+
+      <button @click=" login()" class="login_btn">{{ button_text }}</button>
       <button v-if="adm_options==true" @click="go_to_users()" class="manage_btn">Управление пользователями</button>
     </div>
 
@@ -59,7 +65,9 @@
           token: '',
           headers: {},
           admin_token: '',
-          adm_options: false
+          adm_options: false,
+          start_date: '',
+          end_date: ''
         };
       },
       mounted() {
@@ -150,7 +158,7 @@
           } else { chats_param = '' }
           this.request_get('get_messages', [`des=${desc_option}`, chats_param], this.headers)
             .then(data => {
-              this.data = data;
+              this.fetchDataByDate()
             })
         },
         login() {
@@ -181,6 +189,23 @@
             this.rotation_date = 0
           }
           this.fetchData(this.selected_chats, this.desc_option);
+        },
+        fetchDataByDate() {
+          // Формируем строку для запроса на сервер
+          const startDateParam = `date_to=${this.start_date}`;
+          const endDateParam = `date_from=${this.end_date}`;
+          const chatsParam = this.selected_chats.length > 0 ? `&chat_id=${this.selected_chats.join('&chat_id=')}` : '';
+
+          // Выполняем запрос на сервер
+          this.request_get('get_messages', [startDateParam, endDateParam, chatsParam, `des=${this.desc_option}`], this.headers)
+            .then(data => {
+              this.data = data;
+            })
+            .catch(error => {
+              console.error('Ошибка при получении данных:', error);
+              alert('Произошла ошибка при загрузке данных.');
+            });
+
         },
         selectChat(chat) {
           if (!this.selected_chats.includes(chat)) {

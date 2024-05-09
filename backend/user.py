@@ -42,6 +42,12 @@ def parse_timestamp(timestamp):
     return f"{dt.day} {month} {dt.year} в {dt.hour}:{dt.minute}"
 
 
+def to_timestamp(date):
+    dt = datetime.strptime(date, '%Y-%m-%d')
+    timestamp = dt.timestamp()
+    return int(timestamp)
+
+
 def get_all_posts(chat_id: List[str] = Query(None), des='true', date_from='', date_to='',
                   db: Session = Depends(get_db)):
     query = db.query(models.Message)
@@ -54,9 +60,9 @@ def get_all_posts(chat_id: List[str] = Query(None), des='true', date_from='', da
         query = query.order_by(models.Message.date)
 
     if date_from:
-        query = query.filter(models.Message.date >= date_from)
+        query = query.filter(models.Message.date >= to_timestamp(date_from))
     if date_to:
-        query = query.filter(models.Message.date <= date_to)
+        query = query.filter(models.Message.date <= to_timestamp(date_to))
 
     return query.all()
 
@@ -133,7 +139,9 @@ def get_replies_(replies: dict = Depends(get_replies), token: str = Depends(reus
             'date': parse_timestamp(reply.date),
             'text': reply.message_text,
             'chat_id': reply.chat_id,
-            'id': reply.id
+            'id': reply.id,
+            'name': reply.user.user_first_name,
+            'last_name': reply.user.user_last_name
         }
         for reply in replies
     ]

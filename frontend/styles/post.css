@@ -81,3 +81,8 @@
     background-color: #4682b4;
     color: #fff;
 }
+
+button img {
+    position: relative;
+    top: 4px;
+}

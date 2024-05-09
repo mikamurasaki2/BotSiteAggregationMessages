@@ -37,7 +37,9 @@
         </div>
         <div v-for="reply in replies" class="replies">
             <button v-if="adm_options==true" @click="delete_reply(reply.id)">Удалить</button>
-            <p>{{ reply.username }}</p>
+            <p v-if="reply.name != null">{{ reply.name }}</p>
+            <p v-if="reply.last_name != null">{{ reply.last_name }}</p>
+            <p v-if="reply.name == null">{{ reply.username }}</p>
             <p>{{ reply.date }}</p>
             <p>{{ reply.text }}</p>
             <!-- <img src="{{reply.url}}"> -->
@@ -229,6 +231,7 @@
                             })
                     } else {
                         this.checked_status = false
+                        this.get_replies(this.post_id)
                     }
                 },
                 clearAllCookies() {
