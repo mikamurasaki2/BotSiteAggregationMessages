@@ -3,63 +3,61 @@ Use maindb;
 
 create table table_messages
 (
-    id            INTEGER
-        primary key auto_increment,
-    message_id    BIGINT,
-    chat_id       BIGINT,
-    user_id       BIGINT,
-    message_text  TEXT,
-    chat_username TEXT,
-    username      TEXT,
-    date          INTEGER,
-    type          TEXT
+    id            int auto_increment
+        primary key,
+    message_id    bigint null,
+    chat_id       bigint null,
+    user_id       bigint null,
+    message_text  text   null,
+    chat_username text   null,
+    username      text   null,
+    date          int    null,
+    type          text   null
 );
 
 create table table_replies
 (
-    id                      BIGINT
-        primary key auto_increment,
-    message_id              BIGINT,
-    chat_id                 BIGINT,
-    user_id                 BIGINT,
-    message_text            TEXT,
-    chat_username           TEXT,
-    username                TEXT,
-    date                    INTEGER,
-    replied_to_user_id      BIGINT,
-    replied_to_message_text TEXT,
-    replied_to_message_id   BIGINT,
-    replied_to_message_date TEXT,
-    post_id                 integer references table_messages (id)
+    id                      int auto_increment
+        primary key,
+    message_id              bigint null,
+    chat_id                 bigint null,
+    user_id                 bigint null,
+    message_text            text   null,
+    chat_username           text   null,
+    username                text   null,
+    date                    int    null,
+    replied_to_user_id      bigint null,
+    replied_to_message_text text   null,
+    replied_to_message_id   bigint null,
+    replied_to_message_date text   null,
+    post_id                 bigint null
 );
 
 create table table_users
 (
-    id              BIGINT
-        primary key auto_increment,
-    chat_id         BIGINT,
-    chat_username   TEXT,
-    user_id         BIGINT,
-    username        TEXT,
-    user_first_name TEXT,
-    user_last_name  TEXT
+    id              int auto_increment
+        primary key,
+    chat_id         bigint     null,
+    chat_username   text       null,
+    user_id         bigint     null,
+    username        text       null,
+    user_first_name text       null,
+    user_last_name  text       null,
+    is_admin        tinyint(1) null
 );
 
 create table table_users_private
 (
-    id              BIGINT
-        primary key auto_increment,
-    user_id         BIGINT,
-    password        TEXT,
-    username        TEXT,
-    user_first_name TEXT,
-    user_last_name  TEXT,
-    date            BIGINT,
-    is_admin        BOOL
+    id              int auto_increment
+        primary key,
+    user_id         bigint     null,
+    password        text       null,
+    username        text       null,
+    user_first_name text       null,
+    user_last_name  text       null,
+    date            bigint     null,
+    is_admin        tinyint(1) null
 );
 
-SELECT *
-FROM table_replies
-JOIN table_users_private ON table_replies.user_id = table_users_private.user_id
-WHERE table_replies.post_id = 1266
-ORDER BY table_users_private.is_admin DESC;
+
+
