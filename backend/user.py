@@ -82,7 +82,7 @@ def get_replies(msg_id, admin_sort='false', db: Session = Depends(get_db)):
                 models.PrivateUser.is_admin.desc()).all()
         )
     else:
-        return db.query(models.Reply).filter(models.Reply.post_id == msg_id).all()
+        return db.query(models.Reply).join(models.Reply.user).filter(models.Reply.post_id == msg_id).all()
 
 
 def get_all_users(db: Session = Depends(get_db)):
@@ -141,7 +141,8 @@ def get_replies_(replies: dict = Depends(get_replies), token: str = Depends(reus
             'chat_id': reply.chat_id,
             'id': reply.id,
             'name': reply.user.user_first_name,
-            'last_name': reply.user.user_last_name
+            'last_name': reply.user.user_last_name,
+            'is_admin': reply.user.is_admin
         }
         for reply in replies
     ]

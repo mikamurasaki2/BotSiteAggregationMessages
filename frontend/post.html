@@ -37,6 +37,7 @@
         </div>
         <div v-for="reply in replies" class="replies">
             <button v-if="adm_options==true" @click="delete_reply(reply.id)">Удалить</button>
+            <p v-if="reply.is_admin" style="color: red;">Админ</p>
             <p v-if="reply.name != null">{{ reply.name }}</p>
             <p v-if="reply.last_name != null">{{ reply.last_name }}</p>
             <p v-if="reply.name == null">{{ reply.username }}</p>
@@ -84,6 +85,7 @@
                     'Authorization': 'Bearer ' + this.token
                 };
                 this.parse_post_id()
+                // this.get_replies(this.post_id)
             },
             methods: {
                 delete_reply(post_id) {
@@ -227,7 +229,6 @@
                             data => {
                                 this.replies = data
                                 this.checked_status = true
-                                // window.location.reload()
                             })
                     } else {
                         this.checked_status = false

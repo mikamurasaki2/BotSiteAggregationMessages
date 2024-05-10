@@ -61,3 +61,8 @@ create table table_users_private
 
 
 
+SELECT *
+FROM table_replies
+         JOIN table_users_private ON table_replies.user_id = table_users_private.user_id
+WHERE table_replies.post_id = 1266
+ORDER BY table_users_private.is_admin DESC;
