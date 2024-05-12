@@ -67,7 +67,8 @@
           admin_token: '',
           adm_options: false,
           start_date: '',
-          end_date: ''
+          end_date: '',
+          ip: 'http://31.129.96.68/api/'
         };
       },
       mounted() {
@@ -104,7 +105,7 @@
         request_delete(url, headers = {}) {
           return new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
-            xhr.open('DELETE', 'http://31.129.96.68/api/' + url, true);
+            xhr.open('DELETE', this.ip + url, true);
             Object.keys(headers).forEach(key => {
               xhr.setRequestHeader(key, headers[key]);
             });
@@ -134,7 +135,7 @@
           return new Promise((resolve, reject) => {
             const options = args.join('&');
             const xhr = new XMLHttpRequest();
-            const url = 'http://31.129.96.68/api/' + method + '?' + options;
+            const url = this.ip + method + '?' + options;
             xhr.open('GET', url, true);
             Object.keys(headers).forEach(key => {
               xhr.setRequestHeader(key, headers[key]);
