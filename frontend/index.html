@@ -45,6 +45,7 @@
       <p>{{ item.date }}</p>
       <p style="font-size: 18px;">{{ item.text }}</p>
       <p>Чат: {{ item.chatname }}</p>
+      <p v-if="item.is_admin_answer" style="color: red;">Админ дал ответ</p>
       <button @click="select_post(item.id)">Ответить</button>
     </div>
   </div>
