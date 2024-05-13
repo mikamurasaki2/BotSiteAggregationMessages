@@ -14,6 +14,7 @@ class Reply_Insert(BaseModel):
     username: str
     post_id: int
     chat_id: int
+    user_id: int
 
 
 class Reply(Base):
@@ -40,6 +41,7 @@ class Message(Base):
     chat_username = Column(String)
     username = Column(String)
     date = Column(Integer)
+    is_admin_answer = Column(Integer)
 
 
 class User(Base):
@@ -49,9 +51,9 @@ class User(Base):
     chat_id = Column(Integer)
     chat_username = Column(String)
     user_id = Column(Integer)
-    username = Column(String)
     user_first_name = Column(String)
     user_last_name = Column(String)
+    username = Column(String)
 
 
 class PrivateUser(Base):
@@ -61,7 +63,7 @@ class PrivateUser(Base):
     user_id = Column(Integer)
     password = Column(String)
     username = Column(String)
+    date = Column(Integer)
     user_first_name = Column(String)
     user_last_name = Column(String)
-    date = Column(Integer)
     is_admin = Column(Boolean)

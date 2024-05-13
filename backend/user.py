@@ -1,23 +1,14 @@
 from fastapi import (
     Depends,
-    Query,
-    HTTPException)
+    Query)
 from sqlalchemy import desc
-from datetime import datetime
 from typing import List
 from math import floor
-from pydantic import BaseModel, field_validator, Field
+from pydantic import field_validator, Field
 
 import models
 
-from utils import (
-    create_access_token,
-    create_refresh_token,
-    validate_token,
-    reuseable_oauth,
-    Session,
-    get_db
-)
+from utils import *
 
 
 class User(BaseModel):
@@ -86,7 +77,8 @@ def get_replies(msg_id, admin_sort='false', db: Session = Depends(get_db)):
 
 
 def get_all_users(db: Session = Depends(get_db)):
-    return db.query(models.PrivateUser).distinct().all()
+    return db.query(models.PrivateUser, models.User.user_first_name, models.User.user_last_name).outerjoin(models.User,
+                                                                                                           models.PrivateUser.user_id == models.User.user_id)
 
 
 def get_messages(posts: list = Depends(get_all_posts), token: str = Depends(reuseable_oauth),
@@ -101,7 +93,8 @@ def get_messages(posts: list = Depends(get_all_posts), token: str = Depends(reus
             'id': post.message_id,
             'chatname': post.chat_username,
             'name': db.query(models.User).filter(models.User.user_id == post.user_id).first().user_first_name,
-            'last_name': db.query(models.User).filter(models.User.user_id == post.user_id).first().user_last_name
+            'last_name': db.query(models.User).filter(models.User.user_id == post.user_id).first().user_last_name,
+            'is_admin_answer': post.is_admin_answer
         }
         for post in posts
     ]
@@ -150,9 +143,17 @@ def get_replies_(replies: dict = Depends(get_replies), token: str = Depends(reus
 
 def add_reply(reply: models.Reply_Insert, db: Session = Depends(get_db),
               token: str = Depends(reuseable_oauth)):
-    validate_token(token)
+    is_admin = validate_token(token)
+
+    if is_admin:
+        message_to_update = db.query(models.Message).filter(models.Message.message_id == reply.post_id).first()
+
+        if message_to_update:
+            message_to_update.is_admin_answer = 1
+            db.commit()
+
     try:
-        db_reply = models.Reply(**reply.dict(), date=get_date())
+        db_reply = models.Reply(**reply.model_dump(), date=get_date())
         db.add(db_reply)
         db.commit()
         db.refresh(db_reply)
@@ -164,7 +165,7 @@ def add_reply(reply: models.Reply_Insert, db: Session = Depends(get_db),
 
 def login(view_user: User, db: Session = Depends(get_db)):
     user = db.query(models.PrivateUser).filter(models.PrivateUser.user_id == view_user.username).first()
-    if user is None or user.password != view_user.password:
+    if user is None or user.password != do_hash(view_user.password):
         raise HTTPException(status_code=401, detail="Неверное имя пользователя или пароль")
     else:
         if user.is_admin == 1:

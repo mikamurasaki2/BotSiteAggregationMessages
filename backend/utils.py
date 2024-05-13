@@ -1,3 +1,4 @@
+from hashlib import sha256
 from typing import Union, Any
 from jose import jwt
 from datetime import datetime, timedelta
@@ -39,6 +40,11 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+# 
+def do_hash(password):
+    return sha256(password.encode('utf-8')).hexdigest()
 
 
 def create_access_token(subject: Union[str, Any], expires_delta: int = None) -> str:
