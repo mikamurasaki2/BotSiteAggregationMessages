@@ -29,6 +29,15 @@
         </div>
       </div>
 
+      <div class="dropdown">
+        <button class="dropbtn">Выберите категорию</button>
+        <div class="dropdown-content">
+          <a v-for="chat in chats" @click="toggleChatByType(chat.chat_type)">{{ chat.chat_type }}
+            <img v-if="selected_chats.includes(chat.chat_id)" src="img/checkmark.png" alt="Checkmark" width="20">
+          </a>
+        </div>
+      </div>
+
       <input type="date" id="date1" name="date1" v-model="end_date" @change="fetchDataByDate" />
       <input type="date" id="date2" name="date2" v-model="start_date" @change="fetchDataByDate" />
 
@@ -215,7 +224,29 @@
           } else {
             this.selected_chats = this.selected_chats.filter(selectedChat => selectedChat !== chat);
           }
+          console.log("this.selected_chats:", this.selected_chats);
           this.fetchData(this.selected_chats, this.desc_option);
+        },
+        toggleChatByType(chat) {
+          console.log("Начало toggleChatByType");
+          console.log("chatType:", chat);
+          console.log("this.selected_chats:", this.selected_chats);
+          console.log("this.chats:", this.chats);
+          
+          filtered = this.chats.filter(selectedChat => selectedChat.chat_type === chat)
+                               .map(selectedChat => selectedChat.chat_id);
+          console.log("filetered:", filtered);
+          filtered.forEach(chatId => {
+            if (!this.selected_chats.includes(chatId)) {
+              this.selected_chats.push(chatId);
+            }
+            else {
+            this.selected_chats = this.selected_chats.filter(selectedChat => selectedChat !== chatId);
+          }
+          }); 
+          this.fetchData(this.selected_chats, this.desc_option);
+
+          console.log("Конец toggleChatByType");
         },
         select_post(post_id) {
           window.location.href = `post?post_id=${post_id}`;
