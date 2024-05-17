@@ -119,7 +119,7 @@ def get_messages(posts: list = Depends(get_all_posts), token: str = Depends(reus
     """
     Функция для получения постов для админа и обычного пользователя
     """
-    if validate_token(token):
+    if validate_token(token):   
         return [
             {
                 'username': post.username,
@@ -128,8 +128,8 @@ def get_messages(posts: list = Depends(get_all_posts), token: str = Depends(reus
                 'chat_id': post.chat_id,
                 'id': post.message_id,
                 'chatname': post.chat_username,
-                'name': None,
-                'last_name': None,
+                'name': db.query(models.PrivateUser).filter(models.PrivateUser.user_id == post.user_id).first().user_first_name if db.query(models.PrivateUser).filter(models.PrivateUser.user_id == post.user_id).first() else None,
+                'last_name': db.query(models.PrivateUser).filter(models.PrivateUser.user_id == post.user_id).first().user_last_name if db.query(models.PrivateUser).filter(models.PrivateUser.user_id == post.user_id).first() else None,
                 'is_admin_answer': post.is_admin_answer,
                 'msg_id': post.message_id,
                 'msg_type': post.question_type
@@ -139,7 +139,6 @@ def get_messages(posts: list = Depends(get_all_posts), token: str = Depends(reus
     else:
         token_data = verify_token(token)
         user_id = token_data.get("id")
-        print("Get messages: ", user_id)
         return [
             {
                 'username': post.username,
@@ -148,13 +147,13 @@ def get_messages(posts: list = Depends(get_all_posts), token: str = Depends(reus
                 'chat_id': post.chat_id,
                 'id': post.message_id,
                 'chatname': post.chat_username,
-                'name': None,
-                'last_name': None,
+                'name': db.query(models.PrivateUser).filter(models.PrivateUser.user_id == post.user_id).first().user_first_name if db.query(models.PrivateUser).filter(models.PrivateUser.user_id == post.user_id).first() else None,
+                'last_name': db.query(models.PrivateUser).filter(models.PrivateUser.user_id == post.user_id).first().user_last_name if db.query(models.PrivateUser).filter(models.PrivateUser.user_id == post.user_id).first() else None,
                 'is_admin_answer': post.is_admin_answer,
                 'msg_id': post.message_id,
                 'msg_type': post.question_type
             }
-            for post in posts if post.user_id == user_id
+            for post in posts 
         ]
 
 def get_chats(chats: list = Depends(get_all_chats), token: str = Depends(reuseable_oauth)):
@@ -191,14 +190,18 @@ def get_message(post: dict = Depends(get_post), token: str = Depends(reuseable_o
     Функция получения данных поста
     """
     validate_token(token)
+    token_data = verify_token(token)
+    user_id = token_data.get("id")
+    user = db.query(models.User).filter(models.User.user_id == post.user_id).first()
+    user_private = db.query(models.PrivateUser).filter(models.PrivateUser.user_id == post.user_id).first()
     return {
         'username': post.username,
         'date': parse_timestamp(post.date),
         'text': post.message_text,
         'chat_id': post.chat_id,
         'chatname': post.chat_username,
-        'name': None,
-        'last_name': None,
+        'name': user_private.user_first_name if user_private else (user.user_first_name if user else None),
+        'last_name': user_private.user_last_name if user_private else (user.user_last_name if user else None),
     }
 
 

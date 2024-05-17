@@ -20,10 +20,11 @@
 
         <div class="post">
             <p v-if="data.name != null && data.last_name != null">{{ data.name + " " + data.last_name }}</p>
-            <p v-if="data.name != null && data.last_name == null">{{ data.name }}</p>
-            <p v-if="data.name == null">{{ data.username }}</p>
+            <p v-if="data.name != null && data.last_name === null">{{ data.name }}</p>
+            <p v-if="data.name === null && data.last_name != null">{{ data.last_name }}</p>
+            <p v-if="data.name === null && data.last_name === null">{{ data.username }}</p>
             <p>{{ data.date }}</p>
-            <p style="font-size: 18px;">{{ data.text }}</p>
+            <p style="overflow: auto; font-size: 18px;">{{ data.text }}</p>
             <p>Чат: {{ data.chatname }}</p>
         </div>
 
@@ -42,7 +43,7 @@
             <p v-if="reply.name != null && reply.last_name == null" style="background-color: #f0f0f0; padding: 5px;">{{ reply.name }}</p>
             <p v-if="reply.name == null" style="background-color: #f0f0f0; padding: 5px;">{{ reply.username }}</p>
             <p>{{ reply.date }}</p>
-            <p>{{ reply.text }}</p>
+            <p style="overflow: auto;">{{ reply.text }}</p>
             <!-- <img src="{{reply.url}}"> -->
         </div>
     </div>
