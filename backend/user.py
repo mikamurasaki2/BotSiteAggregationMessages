@@ -128,8 +128,8 @@ def get_messages(posts: list = Depends(get_all_posts), token: str = Depends(reus
                 'chat_id': post.chat_id,
                 'id': post.message_id,
                 'chatname': post.chat_username,
-                'name': db.query(models.PrivateUser).filter(models.PrivateUser.user_id == post.user_id).first().user_first_name if db.query(models.PrivateUser).filter(models.PrivateUser.user_id == post.user_id).first() else None,
-                'last_name': db.query(models.PrivateUser).filter(models.PrivateUser.user_id == post.user_id).first().user_last_name if db.query(models.PrivateUser).filter(models.PrivateUser.user_id == post.user_id).first() else None,
+                'name': db.query(models.PrivateUser).filter(models.PrivateUser.user_id == post.user_id).first().user_first_name if db.query(models.PrivateUser).filter(models.PrivateUser.user_id == post.user_id).first() else (db.query(models.User).filter(models.User.user_id == post.user_id).first().user_first_name if db.query(models.User).filter(models.User.user_id == post.user_id).first() else None),
+                'last_name': db.query(models.PrivateUser).filter(models.PrivateUser.user_id == post.user_id).first().user_last_name if db.query(models.PrivateUser).filter(models.PrivateUser.user_id == post.user_id).first() else (db.query(models.User).filter(models.User.user_id == post.user_id).first().user_last_name if db.query(models.User).filter(models.User.user_id == post.user_id).first() else None),
                 'is_admin_answer': post.is_admin_answer,
                 'msg_id': post.message_id,
                 'msg_type': post.question_type
@@ -147,8 +147,8 @@ def get_messages(posts: list = Depends(get_all_posts), token: str = Depends(reus
                 'chat_id': post.chat_id,
                 'id': post.message_id,
                 'chatname': post.chat_username,
-                'name': db.query(models.PrivateUser).filter(models.PrivateUser.user_id == post.user_id).first().user_first_name if db.query(models.PrivateUser).filter(models.PrivateUser.user_id == post.user_id).first() else None,
-                'last_name': db.query(models.PrivateUser).filter(models.PrivateUser.user_id == post.user_id).first().user_last_name if db.query(models.PrivateUser).filter(models.PrivateUser.user_id == post.user_id).first() else None,
+                'name': db.query(models.PrivateUser).filter(models.PrivateUser.user_id == post.user_id).first().user_first_name if db.query(models.PrivateUser).filter(models.PrivateUser.user_id == post.user_id).first() else (db.query(models.User).filter(models.User.user_id == post.user_id).first().user_first_name if db.query(models.User).filter(models.User.user_id == post.user_id).first() else None),
+                'last_name': db.query(models.PrivateUser).filter(models.PrivateUser.user_id == post.user_id).first().user_last_name if db.query(models.PrivateUser).filter(models.PrivateUser.user_id == post.user_id).first() else (db.query(models.User).filter(models.User.user_id == post.user_id).first().user_last_name if db.query(models.User).filter(models.User.user_id == post.user_id).first() else None),
                 'is_admin_answer': post.is_admin_answer,
                 'msg_id': post.message_id,
                 'msg_type': post.question_type
@@ -207,8 +207,7 @@ def get_message(post: dict = Depends(get_post), token: str = Depends(reuseable_o
 
 def get_replies_(replies: dict = Depends(get_replies), token: str = Depends(reuseable_oauth)):
     """
-    Функция для отправки комментария в веб-приложении с проверкой роли пользователя.
-    Если комментарий отправлен админом, то тогда пост получает статус "Админ дал ответ"
+    Функция для получения реплаев/ответов
     """
     validate_token(token)
     data = list()
@@ -308,3 +307,26 @@ def login(view_user: User, db: Session = Depends(get_db)):
                 "refresh_token": create_refresh_token(user.username, user.user_id),
                 "admin_token": ""
             }
+            
+
+def get_question_types(messages: list = Depends(get_messages), token: str = Depends(reuseable_oauth),
+                       db: Session = Depends(get_db)):
+    """
+    Функция для получения постов для админа и обычного пользователя
+    """
+    if validate_token(token):   
+        return [
+            {
+            'question_type': db.query(models.Message).filter(models.Message.user_id == message.user_id).question_type.all()
+            } 
+            for message in messages]
+    else:
+        token_data = verify_token(token)
+        user_id = token_data.get("id")
+        return [
+            {
+            'question_type': db.query(models.Message).filter(models.Message.user_id == message.user_id).question_type.all()
+            } 
+            for message in messages]
+    
+    

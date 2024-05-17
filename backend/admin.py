@@ -114,3 +114,34 @@ def change_admin(user_in, token: str = Depends(reuseable_oauth),
                                 detail=f"Произошла ошибка при обновлении статуса администратора: {str(e)}")
     else:
         raise HTTPException(status_code=401, detail="Не авторизован")
+    
+    
+    
+def delete_user(user_id, token: str = Depends(reuseable_oauth),
+                 db: Session = Depends(get_db)):
+    """
+    Функция удаления пользователя
+    """
+    is_authenticated = validate_token(token)
+    if is_authenticated:
+        try:
+            # Находим пользователя по user_id
+            user = db.query(models.PrivateUser).filter(models.PrivateUser.user_id == user_id).first()
+            if user:
+                if user.user_id == 1:
+                    return {"message": f"Пользователь суперюзер не может быть удален"}
+                # Удаляем пользователя по user_id
+                users_chats = db.query(models.User).filter(models.User.user_id == user_id).all()
+                for user_chats in users_chats:
+                    db.delete(user_chats)                    
+                db.delete(user)
+                db.commit()
+                return {"message": f"Пользователь {user_id} был успешно удален"}
+            else:
+                raise HTTPException(status_code=404, detail="Пользователь не найден")
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(status_code=500,
+                                detail=f"Произошла ошибка при удалении администратора: {str(e)}")
+    else:
+        raise HTTPException(status_code=401, detail="Не авторизован")

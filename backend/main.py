@@ -111,3 +111,11 @@ async def change_admin_route(user_in: admin.User_admin, token: str = Depends(reu
     Эндпоинт для смены роли пользователя
     """
     return admin.change_admin(user_in, token, db)
+
+@app.delete("/api/delete_user/{user_id}")
+async def delete_user_route(user_id: int, token: str = Depends(reuseable_oauth),
+                             db: Session = Depends(get_db)):
+    """
+    Эндпоинт для удаления пользователя
+    """
+    return admin.delete_user(user_id, token, db)

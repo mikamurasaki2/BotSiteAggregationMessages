@@ -24,6 +24,7 @@
             <p v-if="user.name == null" style="background-color: #f4f4f4; padding: 5px;">{{ user.username }}</p>
             <p v-if="user.is_admin">Роль: Преподаватель</p>
             <p v-if="!user.is_admin">Роль: Обучающийся</p>
+            <button v-if="user.user_id !='1'" @click="delete_user(user.user_id)">Удалить</button>
             <button v-if="!user.is_admin" @click="make_admin(user.user_id)">Повысить</button>
             <button v-if="user.is_admin && user.user_id!='1'" @click="remove_admin(user.user_id)">Разжаловать</button>
         </div>
@@ -151,7 +152,39 @@
                             .catch(error => {
                                 console.error('Ошибка при отправке ответа:', error);
                             });
-                    }
+                    },
+                    delete_user(user_id){
+                        if (confirm('Вы уверены, что хотите удалить этого пользователя?')) {
+                            this.request_delete('delete_user/' + user_id, this.headers)
+                                .then(response => {
+                                    alert('Пользователь успешно удален.');
+                                    window.location.reload();
+                                })
+                                .catch(error => {
+                                    console.error('Ошибка при удалении пользователя:', error);
+                                    alert('Произошла ошибка при удалении пользователя.');
+                                });
+                        }
+                    },
+                    request_delete(url, headers = {}) {
+                        return new Promise((resolve, reject) => {
+                            const xhr = new XMLHttpRequest();
+                            xhr.open('DELETE', this.ip + url, true);
+                            Object.keys(headers).forEach(key => {
+                                xhr.setRequestHeader(key, headers[key]);
+                            });
+                            xhr.onreadystatechange = () => {
+                                if (xhr.readyState === 4) {
+                                    if (xhr.status === 200) {
+                                        resolve(xhr.responseText);
+                                    } else {
+                                        reject('Request failed with status: ' + xhr.status);
+                                    }
+                                }
+                            };
+                            xhr.send();
+                        });
+                    },
                 }
             });
         </script>
