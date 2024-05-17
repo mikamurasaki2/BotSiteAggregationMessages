@@ -71,6 +71,8 @@
                             this.setCookie('token', this.token, 30)
                             this.setCookie('username', this.username, 30)
                             this.setCookie('admin_token', this.admin_token, 30)
+                            this.id = response['id']
+                            this.setCookie('id', this.id, 30)
                             console.log('Авторизация успешна:', response);
                             window.location.href = '/'
                         })

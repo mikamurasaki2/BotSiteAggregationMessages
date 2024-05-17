@@ -43,6 +43,14 @@ async def get_chats_route(chats: list = Depends(user.get_all_chats), token: str 
     return user.get_chats(chats, token)
 
 
+@app.get("/api/get_question_types")
+async def get_question_types_route(posts: list = Depends(user.get_all_posts), token: str = Depends(reuseable_oauth)):
+    """
+    Эндпоинт для получения всех чатов из бд
+    """
+    return user.get_question_types(posts, token)
+
+
 @app.get("/api/get_message/{msg_id}")
 async def get_message_route(post: dict = Depends(user.get_post), token: str = Depends(reuseable_oauth),
                             db: Session = Depends(get_db)):

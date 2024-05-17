@@ -36,7 +36,7 @@ def parse_timestamp(timestamp):
     """
     dt = datetime.fromtimestamp(timestamp)
     month = models.month_names[dt.month - 1]
-    return f"{dt.day} {month} {dt.year} в {dt.hour}:{dt.minute}"
+    return f"{dt.day} {month} {dt.year} в {dt.hour:02d}:{dt.minute:02d}"
 
 
 def to_timestamp(date):
@@ -73,10 +73,18 @@ def get_all_posts(
     if date_to:
         query = query.filter(models.Message.date <= to_timestamp(date_to))
 
-    if not validate_token(token):
-        query = query.filter(models.Message.chat_id.in_(chat_ids_can_view))
+    #if not validate_token(token):
+    #    query = query.filter(models.Message.chat_id.in_(chat_ids_can_view))
+        
+    if validate_token(token):
+        if user_id == 1:
+            return query.all()
+        else:
+            return query.filter(models.Message.chat_id.in_(chat_ids_can_view))
+    else:
+        return query.filter(models.Message.chat_id.in_(chat_ids_can_view))
 
-    return query.all()
+    #return query.all()
 
 
 def get_all_chats(db: Session = Depends(get_db)):
@@ -110,8 +118,7 @@ def get_all_users(db: Session = Depends(get_db)):
     """
     Функция для получения всех пользователей
     """
-    return db.query(models.PrivateUser, models.User.user_first_name, models.User.user_last_name).outerjoin(models.User,
-                                                                                                           models.PrivateUser.user_id == models.User.user_id)
+    return db.query(models.PrivateUser, models.User.user_first_name, models.User.user_last_name).outerjoin(models.User, models.PrivateUser.user_id == models.User.user_id)
 
 
 def get_messages(posts: list = Depends(get_all_posts), token: str = Depends(reuseable_oauth),
@@ -120,7 +127,10 @@ def get_messages(posts: list = Depends(get_all_posts), token: str = Depends(reus
     Функция для получения постов для админа и обычного пользователя
     """
     if validate_token(token):   
-        return [
+        token_data = verify_token(token)
+        user_id = token_data.get("id")
+        if user_id == 1:
+            return [
             {
                 'username': post.username,
                 'date': parse_timestamp(post.date),
@@ -136,6 +146,24 @@ def get_messages(posts: list = Depends(get_all_posts), token: str = Depends(reus
             }
             for post in posts
         ]
+        else:
+            return [
+            {
+                'username': post.username,
+                'date': parse_timestamp(post.date),
+                'text': post.message_text,
+                'chat_id': post.chat_id,
+                'id': post.message_id,
+                'chatname': post.chat_username,
+                'name': db.query(models.PrivateUser).filter(models.PrivateUser.user_id == post.user_id).first().user_first_name if db.query(models.PrivateUser).filter(models.PrivateUser.user_id == post.user_id).first() else (db.query(models.User).filter(models.User.user_id == post.user_id).first().user_first_name if db.query(models.User).filter(models.User.user_id == post.user_id).first() else None),
+                'last_name': db.query(models.PrivateUser).filter(models.PrivateUser.user_id == post.user_id).first().user_last_name if db.query(models.PrivateUser).filter(models.PrivateUser.user_id == post.user_id).first() else (db.query(models.User).filter(models.User.user_id == post.user_id).first().user_last_name if db.query(models.User).filter(models.User.user_id == post.user_id).first() else None),
+                'is_admin_answer': post.is_admin_answer,
+                'msg_id': post.message_id,
+                'msg_type': post.question_type
+            }
+            for post in posts 
+        ]
+        
     else:
         token_data = verify_token(token)
         user_id = token_data.get("id")
@@ -161,14 +189,28 @@ def get_chats(chats: list = Depends(get_all_chats), token: str = Depends(reuseab
     Функция для получения списка чатов для админа и обычного пользователя
     """
     if validate_token(token):
-        return [
-            {
-                'chat_id': chat.chat_id,
-                'chat_username': chat.chat_username,
-                'chat_type': chat.question_type,
-                'msg_id': chat.message_id
-            }
-            for chat in chats]
+        token_data = verify_token(token)
+        user_id = token_data.get("id")
+        if user_id == 1:
+            return [
+                {
+                    'chat_id': chat.chat_id,
+                    'chat_username': chat.chat_username,
+                    'chat_type': chat.question_type,
+                    'msg_id': chat.message_id
+                }
+                for chat in chats]
+        else:
+            db = next(get_db())
+            chat_ids = [user.chat_id for user in db.query(models.User).filter(models.User.user_id == user_id).all()]
+            chats = db.query(models.Message).filter(models.Message.chat_id.in_(chat_ids)).all()
+            return [
+                {
+                    'chat_id': chat.chat_id,
+                    'chat_username': chat.chat_username,
+                    'chat_type': chat.question_type
+                }
+                for chat in chats]
     else:
         db = next(get_db())
         token_data = verify_token(token)
@@ -296,11 +338,20 @@ def login(view_user: User, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Неверное имя пользователя или пароль")
     else:
         if user.is_admin == 1:
-            return {
-                "access_token": "supersecretadmintokenkey123",
-                "refresh_token": create_refresh_token(user.username, user.user_id),
-                "admin_token": "supersecretadmintokenkey123"
-            }
+            if user.user_id == 1:
+                return {
+                    "access_token": "supersecretadmintokenkey123",
+                    "refresh_token": create_refresh_token(user.username, user.user_id),
+                    "admin_token": "supersecretadmintokenkey123",
+                    "id": "1"
+                }
+            else:
+                return {
+                    "access_token": "secretadmintokenkey123",
+                    "refresh_token": create_refresh_token(user.username, user.user_id),
+                    "admin_token": "secretadmintokenkey123",
+                    "id": str(user.user_id)
+                }
         else:
             return {
                 "access_token": create_access_token(user.username, user.user_id),
@@ -309,7 +360,7 @@ def login(view_user: User, db: Session = Depends(get_db)):
             }
             
 
-def get_question_types(messages: list = Depends(get_messages), token: str = Depends(reuseable_oauth),
+def get_question_types(posts: list = Depends(get_messages), token: str = Depends(reuseable_oauth),
                        db: Session = Depends(get_db)):
     """
     Функция для получения постов для админа и обычного пользователя
@@ -317,16 +368,16 @@ def get_question_types(messages: list = Depends(get_messages), token: str = Depe
     if validate_token(token):   
         return [
             {
-            'question_type': db.query(models.Message).filter(models.Message.user_id == message.user_id).question_type.all()
+            'question_type': db.query(models.Message).filter(models.Message.user_id == post.user_id).question_type.all()
             } 
-            for message in messages]
+            for post in posts]
     else:
         token_data = verify_token(token)
         user_id = token_data.get("id")
         return [
             {
-            'question_type': db.query(models.Message).filter(models.Message.user_id == message.user_id).question_type.all()
+            'question_type': db.query(models.Message).filter(models.Message.user_id == post.user_id).question_type.all()
             } 
-            for message in messages]
+            for post in posts]
     
     

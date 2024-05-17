@@ -1,18 +1,26 @@
 .post {
-    background-color: #f0f0f0;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border: 1px solid #f0f0f0;
+    border-radius: 5px;
     margin-bottom: 20px;
-    font-family: Arial, sans-serif;
-    color: #333;
+    padding: 10px;
+    background-color: #f0f0f0;
     overflow: auto;
 }
 
 .post p {
-    margin: 3px;
-    white-space: nowrap;
-    word-wrap: break-word;
+    margin: 5px 0;
+}
+
+.post p:first-child {
+    font-weight: bold;
+}
+
+.post p:nth-child(2) {
+    font-style: italic;
+}
+
+.post p:nth-child(3) {
+    color: #333;
 }
 
 .replies {
@@ -28,7 +36,18 @@
 .replies p {
     margin: 0;
     padding: 5px 0;
-    white-space: nowrap;
+}
+
+.replies p:first-child {
+    font-weight: normal;
+}
+
+.replies p:nth-child(2) {
+    font-style: normal;
+}
+
+.replies p:nth-child(3) {
+    color: #333;
 }
 
 .replies button {

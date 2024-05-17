@@ -50,8 +50,8 @@
       <div class="dropdown">
         <button class="dropbtn">Выберите категорию</button>
         <div class="dropdown-content">
-          <a v-for="c_type in uniqueChatTypes" :key="c_type" @click="toggleChatByType(c_type)">{{ c_type }}
-            <img v-if="selected_types.includes(c_type)" src="img/checkmark.png" alt="Checkmark" width="20">
+          <a v-for="chat in chats" @click="selectChat(question_type)">{{ question_type }}
+            <img v-if="selected_types.includes(question_type)" src="img/checkmark.png" alt="Checkmark" width="20">
           </a>
         </div>
       </div>
@@ -116,6 +116,7 @@
           'Authorization': 'Bearer ' + this.token
         };
         this.get_chats()
+        this.get_types()
         this.sortByDate()
       },
       computed: {
@@ -219,6 +220,26 @@
             });
         },
 
+        get_types() {
+          this.request_get('get_types', [], this.headers)
+            .then(data => {
+              // Фильтрация уникальных чатов
+              const uniqueTypes = new Set();
+
+              const uniqueChats = data.filter(chat => {
+                if (!uniqueTypes.has(chat.chat_type)) {
+                  uniqueTypes.add(chat.chat_type);
+                  return true;
+                }
+                return false;
+              });
+
+              this.chats = uniqueChats;
+
+              console.log("Get Types: ", this.chats);
+            });
+        },
+
         sortByDate() {
           if (this.desc_option == 'true') {
             this.desc_option = 'false'
@@ -256,6 +277,9 @@
           console.log("this.selected_chats:", this.selected_chats);
           this.fetchData(this.selected_chats, this.desc_option);
         },
+
+
+
         fetchDataCategory(chats = this.chats, desc_option = this.desc_option) {
           console.log("Начало Fetch");
           if (chats.length > 0) {
@@ -273,7 +297,7 @@
           console.log("chatType:", chat);
           console.log("this.selected_chats:", this.selected_chats);
           console.log("this.data:", this.data);   
-      
+
           if (this.selected_types.includes(chat)) {
             this.selected_types = this.selected_types.filter(selectedType => selectedType !== chat);
             console.log("types remain:", this.selected_types);
@@ -286,7 +310,8 @@
             this.selected_types.push(chat)
             this.data = this.data.filter(selectedChat => selectedChat.msg_type === chat)
           }
-          filtered = this.data.filter(selectedChat => this.selected_types.includes(selectedChat.msg_type)).map(selectedChat => selectedChat.chat_id);
+          filtered = this.data.filter(selectedChat => selectedChat.msg_type === chat)
+                               .map(selectedChat => selectedChat.chat_id);
           filtered.forEach(chatId => {
             if (!this.selected_chats.includes(chatId)) {
               this.selected_chats.push(chatId);
@@ -294,7 +319,7 @@
             else {
             this.selected_chats = this.selected_chats.filter(selectedChat => selectedChat !== chatId);
             }
-          }); 
+            }); 
 
           console.log("Конец toggleChatByType");
         },
