@@ -1,9 +1,0 @@
-###
-POST http://localhost:8000/api/change_admin_status
-Content-Type: application/json
-Authorization: Bearer supersecretadmintokenkey123
-
-{
-  "user_id": 1087706654,
-  "is_admin": 1
-}
