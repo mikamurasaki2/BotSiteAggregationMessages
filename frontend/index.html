@@ -190,15 +190,32 @@
             xhr.send();
           });
         },
-        fetchData(chats = this.chats, desc_option = this.desc_option) {
+        fetchData(chats = this.chats, desc_option = this.desc_option, selectedTypes = this.selected_types) {
+          let chats_param = '';
           if (chats.length > 0) {
-            chats_param = `chat_id=${chats.join('&chat_id=')}`
-          } else { chats_param = '' }
-          this.request_get('get_messages', [`des=${desc_option}`, chats_param], this.headers)
+            chats_param = `chat_id=${chats.join('&chat_id=')}`;
+          }
+        
+          // Обрабатываем выбранные категории для запроса данных
+          const selectedTypesParam = selectedTypes.length > 0 ? `&selected_types=${selectedTypes.join(',')}` : '';
+        
+          this.request_get('get_messages', [`des=${desc_option}`, chats_param, selectedTypesParam], this.headers)
             .then(data => {
               console.log("Fetch Data");
-              this.fetchDataByDate();
+              // Фильтруем данные с учетом выбранных категорий и чатов, если они выбраны
+              if (selectedTypes.length > 0 && chats.length > 0) {
+                this.data = data.filter(selectedChat => selectedTypes.includes(selectedChat.msg_type) && chats.includes(selectedChat.chat_id));
+              } else {
+                // Если ничего не выбрано, используем все полученные данные
+                this.data = data;
+              }
+              // Обновляем список выбранных чатов на основе отфильтрованных данных
+              this.selected_chats = [...new Set(this.data.map(selectedChat => selectedChat.chat_id))];
+              console.log("this.selected_chats после обновления:", this.selected_chats);
             })
+            .catch(error => {
+              console.error("Ошибка при получении данных:", error);
+            });
         },
         login() {
           if (this.token == '') {
@@ -284,20 +301,18 @@
           console.log("this.selected_chats:", this.selected_chats);
           console.log("this.data:", this.data);   
         
+          // Обновляем состояние выбранных категорий
           if (this.selected_types.includes(chat)) {
-            // Удаляем категорию из списка выбранных категорий
             this.selected_types = this.selected_types.filter(selectedType => selectedType !== chat);
           } else {
-            // Добавляем категорию в список выбранных категорий
             this.selected_types.push(chat);
           }
         
-          // Фильтруем данные по выбранным категориям
-          this.data = this.data.filter(selectedChat => this.selected_types.includes(selectedChat.msg_type));
+          // Вызываем метод для обновления данных с учетом выбранных категорий и текущих чатов
+          this.fetchData(this.selected_chats, this.desc_option, this.selected_types); // передаем текущие параметры
         
-          // Обновляем список выбранных чатов на основе отфильтрованных данных
-          this.selected_chats = [...new Set(this.data.map(selectedChat => selectedChat.chat_id))];
-        
+          console.log("this.selected_types после обновления:", this.selected_types);
+          console.log("this.selected_chats после обновления:", this.selected_chats);
           console.log("Конец toggleChatByType");
         },
         filterChatsByType() {
