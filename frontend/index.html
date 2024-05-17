@@ -13,7 +13,7 @@
 <body>
 
   <div id="app">
-    <div class="panel" style="background-color: #4682b4; padding: 10px; margin-bottom: 20px;">
+    <div class="panel" style="background-color: #4682b4; padding: 10px; margin-bottom: 20px; display: inline-block;">
       <button @click="sortByDate()">
         <img src="img/arrow.png" alt="Arrow" width="20" style="vertical-align: middle;"
           :style="{ transform: 'rotate(' + rotation_date + 'deg)' }">
@@ -54,7 +54,7 @@
       <p>{{ item.date }}</p>
       <p style="font-size: 18px;">{{ item.text }}</p>
       <p>Чат: {{ item.chatname }}</p>
-      <p v-if="item.is_admin_answer" style="color: red;">Админ дал ответ</p>
+      <p v-if="item.is_admin_answer" style="color: red;">Преподаватель дал ответ</p>
       <button @click="select_post(item.id)">Ответить</button>
     </div>
   </div>

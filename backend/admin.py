@@ -35,8 +35,8 @@ def get_users(users: dict = Depends(get_all_users),
                 "user_id": user.user_id,
                 "username": user.username,
                 "is_admin": user.is_admin,
-                # "first_name": user.user.user_first_name,
-                # "last_name": user.user.user_last_name
+                "name": user.user_first_name,
+                "last_name": user.user_last_name
             }
             for user in users
         ]

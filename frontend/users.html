@@ -19,9 +19,11 @@
 
         <div v-for="user in users" class="users">
             <p>{{ user.user_id }}</p>
-            <p>{{ user.username }}</p>
-            <p v-if="user.is_admin">Роль: Админ</p>
-            <p v-if="!user.is_admin">Роль: Пользователь</p>
+            <p v-if="user.name != null && user.last_name != null" style="background-color: #f4f4f4; padding: 5px;">{{ user.name + " " + user.last_name }}</p>
+            <p v-if="user.name != null && user.last_name == null" style="background-color: #f4f4f4; padding: 5px;">{{ user.name }}</p>
+            <p v-if="user.name == null" style="background-color: #f4f4f4; padding: 5px;">{{ user.username }}</p>
+            <p v-if="user.is_admin">Роль: Преподаватель</p>
+            <p v-if="!user.is_admin">Роль: Обучающийся</p>
             <button v-if="!user.is_admin" @click="make_admin(user.user_id)">Повысить</button>
             <button v-if="user.is_admin && user.user_id!='1'" @click="remove_admin(user.user_id)">Разжаловать</button>
         </div>

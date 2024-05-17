@@ -45,11 +45,20 @@ def to_timestamp(date):
     return int(timestamp)
 
 
-def get_all_posts(chat_id: List[str] = Query(None), des='true', date_from='', date_to='',
-                  db: Session = Depends(get_db)):
+def get_all_posts(
+        chat_id: List[str] = Query(None), des='true', date_from='', date_to='',
+        db: Session = Depends(get_db), token: str = Depends(reuseable_oauth)):
     """
     Функция для получения всех постов из бд с учетом сортировок
     """
+    token_data = verify_token(token)
+    user_id = token_data.get("id")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    chats_can_view = db.query(models.User).filter(models.User.user_id == user_id).all()
+    chat_ids_can_view = [chat.chat_id for chat in chats_can_view]
+
     query = db.query(models.Message)
     if chat_id is not None:
         query = query.filter(models.Message.chat_id.in_(chat_id))
@@ -63,6 +72,9 @@ def get_all_posts(chat_id: List[str] = Query(None), des='true', date_from='', da
         query = query.filter(models.Message.date >= to_timestamp(date_from))
     if date_to:
         query = query.filter(models.Message.date <= to_timestamp(date_to))
+
+    if not validate_token(token):
+        query = query.filter(models.Message.chat_id.in_(chat_ids_can_view))
 
     return query.all()
 
