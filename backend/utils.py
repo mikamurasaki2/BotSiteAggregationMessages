@@ -19,7 +19,7 @@ def read_json_field(field_name):
     return data.get(field_name)
 
 
-password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 ACCESS_TOKEN_EXPIRE_MINUTES = read_json_field("ACCESS_TOKEN_EXPIRE_MINUTES")
 JWT_SECRET_KEY = read_json_field("JWT_SECRET_KEY")
 ALGORITHM = read_json_field("ALGORITHM")
@@ -60,6 +60,8 @@ def create_access_token(subject: Union[str, Any], id: int, expires_delta: int = 
 
     to_encode = {"exp": expires_delta, "sub": str(subject), "id": id}
     encoded_jwt = jwt.encode(to_encode, JWT_SECRET_KEY, ALGORITHM)
+    
+    # Возвращение сгенерированного токена
     return encoded_jwt
 
 
@@ -77,18 +79,18 @@ def create_refresh_token(subject: Union[str, Any], id: int, expires_delta: int =
     return encoded_jwt
 
 
-def get_hashed_password(password: str) -> str:
+def get_password_hash(password: str):
     """
     Функция для декодирования пароля
     """
-    return password_context.hash(password)
+    return pwd_context.hash(password)
 
 
-def verify_password(password: str, hashed_pass: str) -> bool:
+def verify_password(plain_password: str, hashed_password: str):
     """
     Функция для верификации пароля
     """
-    return password_context.verify(password, hashed_pass)
+    return pwd_context.verify(plain_password, hashed_password)
 
 
 class TokenPayload(BaseModel):
@@ -107,6 +109,7 @@ def validate_token(token: str):
         return True
     else:
         try:
+            # Попытка декодировать токен, если он некорректен, будет ошибка
             payload = jwt.decode(
                 token, JWT_SECRET_KEY, algorithms=[ALGORITHM]
             )
