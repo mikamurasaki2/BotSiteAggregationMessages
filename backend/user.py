@@ -347,9 +347,9 @@ def login(view_user: User, db: Session = Depends(get_db)):
                 }
             else:
                 return {
-                    "access_token": "secretadmintokenkey123",
+                    "access_token": "secretadmintokenkey123" + str(user.user_id),
                     "refresh_token": create_refresh_token(user.username, user.user_id),
-                    "admin_token": "secretadmintokenkey123",
+                    "admin_token": "secretadmintokenkey123" + str(user.user_id),
                     "id": str(user.user_id)
                 }
         else:

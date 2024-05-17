@@ -91,6 +91,7 @@
           selected_types: [],
           chats: [],
           data: [],
+          initialData: [], // Добавляем переменную для хранения исходных данных
           desc_option: 'false',
           token: '',
           headers: {},
@@ -119,11 +120,11 @@
         this.sortByDate()
       },
       computed: {
-          uniqueChatTypes() {
-            const chatTypes = this.chats.map(chat => chat.chat_type);
-            return [...new Set(chatTypes)];
-          }
-        },
+        uniqueChatTypes() {
+          const allChatTypes = this.chats.flatMap(chat => chat.chat_types);
+          return [...new Set(allChatTypes)];
+        }
+      },
       methods: {
         delete_post(post_id) {
           if (confirm('Вы уверены, что хотите удалить этот пост?')) {
@@ -209,16 +210,24 @@
         },
         get_chats() {
           this.request_get('get_chats', [], this.headers)
-            .then(data => {
-              // Фильтрация уникальных чатов
-              const uniqueChats = data.filter((chat, index, self) =>
-                index === self.findIndex(c => c.chat_id === chat.chat_id)
-              );
-              this.chats = uniqueChats;
-              console.log("Get Chats: ", this.chats);;
-            });
+          .then(data => {
+            this.chats = this.getUniqueChats(data);
+            console.log("Get Chats: ", this.chats);
+          });
         },
+        getUniqueChats(data) {
+          const chatMap = new Map();
 
+          data.forEach(chat => {
+            if (!chatMap.has(chat.chat_id)) {
+              chatMap.set(chat.chat_id, { ...chat, chat_types: [chat.chat_type] });
+            } else {
+              chatMap.get(chat.chat_id).chat_types.push(chat.chat_type);
+            }
+          });
+
+          return Array.from(chatMap.values());
+        },
         sortByDate() {
           if (this.desc_option == 'true') {
             this.desc_option = 'false'
@@ -271,32 +280,34 @@
         toggleChatByType(chat) {
           console.log("Начало toggleChatByType");
           console.log("chatType:", chat);
+          console.log("this.selected_types:", this.selected_types);
           console.log("this.selected_chats:", this.selected_chats);
           console.log("this.data:", this.data);   
-      
+        
           if (this.selected_types.includes(chat)) {
+            // Удаляем категорию из списка выбранных категорий
             this.selected_types = this.selected_types.filter(selectedType => selectedType !== chat);
-            console.log("types remain:", this.selected_types);
-            this.fetchData()
-            this.selected_types.forEach(chatType => {
-              this.data = this.data.filter(selectedChat => selectedChat.msg_type === chatType)
-            })
+          } else {
+            // Добавляем категорию в список выбранных категорий
+            this.selected_types.push(chat);
           }
-          else {
-            this.selected_types.push(chat)
-            this.data = this.data.filter(selectedChat => selectedChat.msg_type === chat)
-          }
-          filtered = this.data.filter(selectedChat => this.selected_types.includes(selectedChat.msg_type)).map(selectedChat => selectedChat.chat_id);
-          filtered.forEach(chatId => {
-            if (!this.selected_chats.includes(chatId)) {
-              this.selected_chats.push(chatId);
-            }
-            else {
-            this.selected_chats = this.selected_chats.filter(selectedChat => selectedChat !== chatId);
-            }
-          }); 
-
+        
+          // Фильтруем данные по выбранным категориям
+          this.data = this.data.filter(selectedChat => this.selected_types.includes(selectedChat.msg_type));
+        
+          // Обновляем список выбранных чатов на основе отфильтрованных данных
+          this.selected_chats = [...new Set(this.data.map(selectedChat => selectedChat.chat_id))];
+        
           console.log("Конец toggleChatByType");
+        },
+        filterChatsByType() {
+          if (this.selected_types.length === 0) {
+            this.fetchData(); // Загружаем все данные, если нет выбранных категорий
+          } else {
+            const filteredChats = this.chats.filter(chat => this.selected_types.includes(chat.chat_type));
+            this.selected_chats = filteredChats.map(chat => chat.chat_id);
+            this.fetchData(this.selected_chats, this.desc_option);
+          }
         },
         select_post(post_id) {
           window.location.href = `post?post_id=${post_id}`;
