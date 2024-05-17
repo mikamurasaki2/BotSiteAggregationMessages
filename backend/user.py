@@ -24,10 +24,16 @@ class User(BaseModel):
 
 
 def get_date():
+    """
+    Функция для получения времени и преобразования по Мск
+    """
     return floor(datetime.utcnow().timestamp()) + 3 * 60 * 60
 
 
 def parse_timestamp(timestamp):
+    """
+    Функция для визуального отображения времени ДД ММ ГГ в ЧЧ:ММ
+    """
     dt = datetime.fromtimestamp(timestamp)
     month = models.month_names[dt.month - 1]
     return f"{dt.day} {month} {dt.year} в {dt.hour}:{dt.minute}"
@@ -41,6 +47,9 @@ def to_timestamp(date):
 
 def get_all_posts(chat_id: List[str] = Query(None), des='true', date_from='', date_to='',
                   db: Session = Depends(get_db)):
+    """
+    Функция для получения всех постов из бд с учетом сортировок
+    """
     query = db.query(models.Message)
     if chat_id is not None:
         query = query.filter(models.Message.chat_id.in_(chat_id))
@@ -59,14 +68,23 @@ def get_all_posts(chat_id: List[str] = Query(None), des='true', date_from='', da
 
 
 def get_all_chats(db: Session = Depends(get_db)):
+    """
+    Функция для получения всех чатов
+    """
     return db.query(models.Message).distinct().all()
 
 
 def get_post(msg_id, db: Session = Depends(get_db)):
+    """
+    Функция для получения конкретного поста по его id
+    """
     return db.query(models.Message).filter(models.Message.message_id == msg_id).first()
 
 
 def get_replies(msg_id, admin_sort='false', db: Session = Depends(get_db)):
+    """
+    Функция для визуального отображения комментариев, отправленных админами
+    """
     if admin_sort == 'true':
         return (
             db.query(models.Reply).join(models.Reply.user).filter(models.Reply.post_id == msg_id).order_by(
@@ -77,12 +95,18 @@ def get_replies(msg_id, admin_sort='false', db: Session = Depends(get_db)):
 
 
 def get_all_users(db: Session = Depends(get_db)):
+    """
+    Функция для получения всех пользователей
+    """
     return db.query(models.PrivateUser, models.User.user_first_name, models.User.user_last_name).outerjoin(models.User,
                                                                                                            models.PrivateUser.user_id == models.User.user_id)
 
 
 def get_messages(posts: list = Depends(get_all_posts), token: str = Depends(reuseable_oauth),
                  db: Session = Depends(get_db)):
+    """
+    Функция для получения постов для админа и обычного пользователя
+    """
     if validate_token(token):
         return [
             {
@@ -122,6 +146,9 @@ def get_messages(posts: list = Depends(get_all_posts), token: str = Depends(reus
         ]
 
 def get_chats(chats: list = Depends(get_all_chats), token: str = Depends(reuseable_oauth)):
+    """
+    Функция для получения списка чатов для админа и обычного пользователя
+    """
     if validate_token(token):
         return [
             {
@@ -148,6 +175,9 @@ def get_chats(chats: list = Depends(get_all_chats), token: str = Depends(reuseab
 
 def get_message(post: dict = Depends(get_post), token: str = Depends(reuseable_oauth),
                 db: Session = Depends(get_db)):
+    """
+    Функция получения данных поста
+    """
     validate_token(token)
     return {
         'username': post.username,
@@ -161,6 +191,9 @@ def get_message(post: dict = Depends(get_post), token: str = Depends(reuseable_o
 
 
 def get_replies_(replies: dict = Depends(get_replies), token: str = Depends(reuseable_oauth)):
+    """
+    Функция получения данных комментария
+    """
     validate_token(token)
     return [
         {
@@ -179,12 +212,17 @@ def get_replies_(replies: dict = Depends(get_replies), token: str = Depends(reus
 
 def add_reply(reply: models.Reply_Insert, db: Session = Depends(get_db),
               token: str = Depends(reuseable_oauth)):
+    """
+    Функция для отправки комментария в веб-приложении с проверкой роли пользователя.
+    Если комментарий отправлен админом, то тогда пост получает статус "Админ дал ответ"
+    """
     is_admin = validate_token(token)
 
     if is_admin:
         message_to_update = db.query(models.Message).filter(models.Message.message_id == reply.post_id).first()
 
         if message_to_update:
+            # Смена статуса поста на "Админ дал ответ"
             message_to_update.is_admin_answer = 1
             db.commit()
 
@@ -200,6 +238,9 @@ def add_reply(reply: models.Reply_Insert, db: Session = Depends(get_db),
 
 
 def login(view_user: User, db: Session = Depends(get_db)):
+    """
+    Функция для авторизации и проверки на суперюзера
+    """
     user = db.query(models.PrivateUser).filter(models.PrivateUser.user_id == view_user.username).first()
     if user is None or user.password != do_hash(view_user.password):
         raise HTTPException(status_code=401, detail="Неверное имя пользователя или пароль")

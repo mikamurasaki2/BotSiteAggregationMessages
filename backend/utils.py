@@ -43,10 +43,16 @@ def get_db():
 
 
 def do_hash(password):
+    """
+    Функция для хэширования пароля
+    """
     return sha256(password.encode('utf-8')).hexdigest()
 
 
 def create_access_token(subject: Union[str, Any], id: int, expires_delta: int = None) -> str:
+    """
+    Функция создания токена доступа с истечением срока действия
+    """
     if expires_delta is not None:
         expires_delta = datetime.utcnow() + expires_delta
     else:
@@ -58,6 +64,9 @@ def create_access_token(subject: Union[str, Any], id: int, expires_delta: int = 
 
 
 def create_refresh_token(subject: Union[str, Any], id: int, expires_delta: int = None) -> str:
+    """
+    Функция обновления токена доступа с истечением срока действия
+    """
     if expires_delta is not None:
         expires_delta = datetime.utcnow() + expires_delta
     else:
@@ -69,10 +78,16 @@ def create_refresh_token(subject: Union[str, Any], id: int, expires_delta: int =
 
 
 def get_hashed_password(password: str) -> str:
+    """
+    Функция для декодирования пароля
+    """
     return password_context.hash(password)
 
 
 def verify_password(password: str, hashed_pass: str) -> bool:
+    """
+    Функция для верификации пароля
+    """
     return password_context.verify(password, hashed_pass)
 
 
