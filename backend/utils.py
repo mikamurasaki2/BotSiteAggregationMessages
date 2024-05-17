@@ -21,10 +21,10 @@ def read_json_field(field_name):
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 ACCESS_TOKEN_EXPIRE_MINUTES = read_json_field("ACCESS_TOKEN_EXPIRE_MINUTES")
-JWT_SECRET_KEY = read_json_field("JWT_SECRET_KEY")
+SECRET_KEY = read_json_field("SECRET_KEY")
 ALGORITHM = read_json_field("ALGORITHM")
 REFRESH_TOKEN_EXPIRE_MINUTES = read_json_field("REFRESH_TOKEN_EXPIRE_MINUTES")
-JWT_REFRESH_SECRET_KEY = read_json_field("JWT_REFRESH_SECRET_KEY")
+REFRESH_SECRET_KEY = read_json_field("REFRESH_SECRET_KEY")
 
 reuseable_oauth = OAuth2PasswordBearer(
     tokenUrl="/login",
@@ -59,7 +59,7 @@ def create_access_token(subject: Union[str, Any], id: int, expires_delta: int = 
         expires_delta = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
 
     to_encode = {"exp": expires_delta, "sub": str(subject), "id": id}
-    encoded_jwt = jwt.encode(to_encode, JWT_SECRET_KEY, ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, ALGORITHM)
     
     # Возвращение сгенерированного токена
     return encoded_jwt
@@ -75,7 +75,7 @@ def create_refresh_token(subject: Union[str, Any], id: int, expires_delta: int =
         expires_delta = datetime.utcnow() + timedelta(minutes=REFRESH_TOKEN_EXPIRE_MINUTES)
 
     to_encode = {"exp": expires_delta, "sub": str(subject), "id": id}
-    encoded_jwt = jwt.encode(to_encode, JWT_REFRESH_SECRET_KEY, ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, REFRESH_SECRET_KEY, ALGORITHM)
     return encoded_jwt
 
 
@@ -111,7 +111,7 @@ def validate_token(token: str):
         try:
             # Попытка декодировать токен, если он некорректен, будет ошибка
             payload = jwt.decode(
-                token, JWT_SECRET_KEY, algorithms=[ALGORITHM]
+                token, SECRET_KEY, algorithms=[ALGORITHM]
             )
             token_data = TokenPayload(**payload)
 
@@ -140,7 +140,7 @@ def verify_token(token: str):
         return token_data
     try:
         payload = jwt.decode(
-            token, JWT_SECRET_KEY, algorithms=[ALGORITHM]
+            token, SECRET_KEY, algorithms=[ALGORITHM]
         )
         token_data = TokenPayload(**payload)
 
