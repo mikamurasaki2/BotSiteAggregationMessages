@@ -128,8 +128,8 @@ def get_messages(posts: list = Depends(get_all_posts), token: str = Depends(reus
                 'chat_id': post.chat_id,
                 'id': post.message_id,
                 'chatname': post.chat_username,
-                'name': db.query(models.User).filter(models.User.user_id == post.user_id).first().user_first_name,
-                'last_name': db.query(models.User).filter(models.User.user_id == post.user_id).first().user_last_name,
+                'name': None,
+                'last_name': None,
                 'is_admin_answer': post.is_admin_answer,
                 'msg_id': post.message_id,
                 'msg_type': post.question_type
@@ -148,8 +148,8 @@ def get_messages(posts: list = Depends(get_all_posts), token: str = Depends(reus
                 'chat_id': post.chat_id,
                 'id': post.message_id,
                 'chatname': post.chat_username,
-                'name': db.query(models.User).filter(models.User.user_id == post.user_id).first().user_first_name,
-                'last_name': db.query(models.User).filter(models.User.user_id == post.user_id).first().user_last_name,
+                'name': None,
+                'last_name': None,
                 'is_admin_answer': post.is_admin_answer,
                 'msg_id': post.message_id,
                 'msg_type': post.question_type
@@ -197,8 +197,8 @@ def get_message(post: dict = Depends(get_post), token: str = Depends(reuseable_o
         'text': post.message_text,
         'chat_id': post.chat_id,
         'chatname': post.chat_username,
-        'name': db.query(models.User).filter(models.User.user_id == post.user_id).first().user_first_name,
-        'last_name': db.query(models.User).filter(models.User.user_id == post.user_id).first().user_last_name,
+        'name': None,
+        'last_name': None,
     }
 
 
