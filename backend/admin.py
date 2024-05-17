@@ -29,7 +29,6 @@ def get_users(users: dict = Depends(get_all_users),
     """
     is_admin = validate_token(token)
     if is_admin:
-
         return [
             {
                 "user_id": user.user_id,
@@ -41,7 +40,7 @@ def get_users(users: dict = Depends(get_all_users),
             for user in users
         ]
     else:
-        raise HTTPException(status_code=403, detail=f"Auth Error. User is not admin")
+        raise HTTPException(status_code=403, detail=f"Auth Error. Пользователь не найден")
 
 
 def delete_message(msg_id: int, token: str = Depends(reuseable_oauth),
@@ -58,14 +57,14 @@ def delete_message(msg_id: int, token: str = Depends(reuseable_oauth),
                 # Удаляем пост
                 db.delete(post)
                 db.commit()
-                return {"message": "Message deleted successfully"}
+                return {"message": "Пост удален успешно"}
             else:
-                raise HTTPException(status_code=404, detail="Message not found")
+                raise HTTPException(status_code=404, detail="Пост не найден")
         except Exception as e:
             db.rollback()
-            raise HTTPException(status_code=500, detail=f"An error occurred while deleting message: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"При удалении поста произошла ошибка: {str(e)}")
     else:
-        raise HTTPException(status_code=403, detail=f"Auth Error. User is not admin")
+        raise HTTPException(status_code=403, detail=f"Auth Error. Пользователь неимеет статус администратора")
 
 
 def delete_reply(reply_id: int, token: str = Depends(reuseable_oauth), db: Session = Depends(get_db)):
@@ -81,14 +80,14 @@ def delete_reply(reply_id: int, token: str = Depends(reuseable_oauth), db: Sessi
                 # Удаляем комментарий
                 db.delete(reply)
                 db.commit()
-                return {"message": "Reply deleted successfully"}
+                return {"message": "Ответ удален успешно"}
             else:
-                raise HTTPException(status_code=404, detail="Message not found")
+                raise HTTPException(status_code=404, detail="Ответ не найден")
         except Exception as e:
             db.rollback()
-            raise HTTPException(status_code=500, detail=f"An error occurred while deleting message: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"При удалении ответа произошла ошибка: {str(e)}")
     else:
-        raise HTTPException(status_code=500, detail=f"An error occurred while deleting message.")
+        raise HTTPException(status_code=500, detail=f"При удалении ответа произошла ошибка.")
 
 
 def change_admin(user_in, token: str = Depends(reuseable_oauth),

