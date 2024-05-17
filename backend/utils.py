@@ -107,7 +107,7 @@ class TokenPayload(BaseModel):
         return getattr(self, field_name, None)
 
 
-def validate_token(token: str, refresh_token: str = None):
+def validate_token(token: str): #, refresh_token: str = None
     if token == 'supersecretadmintokenkey123':
         return True
     elif str(token) [:22] == 'secretadmintokenkey123':
