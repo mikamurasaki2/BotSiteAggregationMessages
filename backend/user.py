@@ -353,24 +353,5 @@ def login(view_user: User, db: Session = Depends(get_db)):
             }
             
 
-def get_question_types(posts: list = Depends(get_messages), token: str = Depends(reuseable_oauth),
-                       db: Session = Depends(get_db)):
-    """
-    Функция для получения постов для админа и обычного пользователя
-    """
-    if validate_token(token):   
-        return [
-            {
-            'question_type': db.query(models.Message).filter(models.Message.user_id == post.user_id).question_type.all()
-            } 
-            for post in posts]
-    else:
-        token_data = verify_token(token)
-        user_id = token_data.get("id")
-        return [
-            {
-            'question_type': db.query(models.Message).filter(models.Message.user_id == post.user_id).question_type.all()
-            } 
-            for post in posts]
     
     

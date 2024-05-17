@@ -93,6 +93,11 @@ def verify_password(plain_password: str, hashed_password: str):
     return pwd_context.verify(plain_password, hashed_password)
 
 
+class Token(BaseModel):
+    access_token: Optional[str] = None
+    refresh_token: Optional[str] = None
+
+
 class TokenPayload(BaseModel):
     exp: Optional[int] = None
     sub: Optional[str] = None
@@ -102,7 +107,7 @@ class TokenPayload(BaseModel):
         return getattr(self, field_name, None)
 
 
-def validate_token(token: str):
+def validate_token(token: str, refresh_token: str = None):
     if token == 'supersecretadmintokenkey123':
         return True
     elif str(token) [:22] == 'secretadmintokenkey123':
@@ -122,6 +127,23 @@ def validate_token(token: str):
                     headers={"WWW-Authenticate": "Bearer"},
                 )
             return False
+            #if refresh_token is None:
+            #    return False
+            #refresh_payload = jwt.decode(
+            #    refresh_token, REFRESH_SECRET_KEY, algorithms=[ALGORITHM]
+            #)
+            #refresh_token_data = TokenPayload(**refresh_payload)
+
+            #if datetime.fromtimestamp(refresh_token_data.exp) < datetime.now():
+            #    raise HTTPException(
+            #        status_code=status.HTTP_401_UNAUTHORIZED,
+            #        detail="Refresh token expired",
+            #        headers={"WWW-Authenticate": "Bearer"},
+            #    )
+
+            # Генерация нового access токена, если refresh доступен
+            #new_access_token = create_access_token(subject=token_data.sub, id=token_data.id)
+            #return False, new_access_token    
 
         except (jwt.JWTError, ValidationError):
             raise HTTPException(
