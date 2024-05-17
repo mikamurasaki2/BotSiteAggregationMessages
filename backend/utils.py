@@ -127,7 +127,7 @@ def validate_token(token: str):
         
 def verify_token(token: str):
     if token == 'supersecretadmintokenkey123':
-        token_data = TokenPayload(exp=828389, sub="admin", id=1087706654)
+        token_data = TokenPayload(exp=828389, sub="admin", id=1)
         return token_data
     try:
         payload = jwt.decode(

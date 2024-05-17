@@ -10,6 +10,7 @@
 
 .post p {
     margin: 3px;
+    white-space: nowrap;
 }
 
 .replies {
@@ -25,6 +26,7 @@
 .replies p {
     margin: 0;
     padding: 5px 0;
+    white-space: nowrap;
 }
 
 .replies button {

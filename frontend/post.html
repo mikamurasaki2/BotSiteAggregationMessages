@@ -19,8 +19,7 @@
         </div>
 
         <div class="post">
-            <p v-if="data.name != null">{{ data.name }}</p>
-            <p v-if="data.last_name != null">{{ data.last_name }}</p>
+            <p v-if="data.name != null">{{ data.name.trim() + " " + data.last_name }}</p>
             <p v-if="data.name == null">{{ data.username }}</p>
             <p>{{ data.date }}</p>
             <p style="font-size: 18px;">{{ data.text }}</p>
@@ -38,8 +37,7 @@
         <div v-for="reply in replies" class="replies">
             <button v-if="adm_options==true" @click="delete_reply(reply.id)">Удалить</button>
             <p v-if="reply.is_admin" style="color: red;">Админ</p>
-            <p v-if="reply.name != null">{{ reply.name }}</p>
-            <p v-if="reply.last_name != null">{{ reply.last_name }}</p>
+            <p v-if="reply.name != null">{{ reply.name + " " + reply.last_name }}</p>
             <p v-if="reply.name == null">{{ reply.username }}</p>
             <p>{{ reply.date }}</p>
             <p>{{ reply.text }}</p>
@@ -94,7 +92,8 @@
                         this.request_delete('delete_reply/' + post_id, this.headers)
                             .then(response => {
                                 alert('Ответ успешно удален.');
-                                window.location.reload();
+                                //window.location.reload();
+                                this.parse_post_id();
                             })
                             .catch(error => {
                                 console.error('Ошибка при удалении ответа:', error);
@@ -186,6 +185,7 @@
                     this.request_post('new_reply/', postData, this.headers)
                         .then(() => {
                             // window.location.reload();
+                            this.parse_post_id();
                         })
                         .catch(error => {
                             console.error('Ошибка при отправке ответа:', error);

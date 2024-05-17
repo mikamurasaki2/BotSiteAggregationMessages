@@ -50,7 +50,7 @@
       <button v-if="adm_options==true" @click="delete_post(item.id)" class="del_btn">Удалить</button>
       <p v-if="item.name != null">{{ item.name }}</p>
       <p v-if="item.last_name != null">{{ item.last_name }}</p>
-      <p v-if="item.name == null">{{ item.username }}</p>
+      <p v-if="item.name === null && item.last_name === null">{{ item.username }}</p>
       <p>{{ item.date }}</p>
       <p style="font-size: 18px;">{{ item.text }}</p>
       <p>Чат: {{ item.chatname }}</p>
@@ -220,7 +220,7 @@
           this.request_get('get_messages', [startDateParam, endDateParam, chatsParam, `des=${this.desc_option}`], this.headers)
             .then(data => {
               this.data = data;
-              console.log("Order By date");
+              console.log("Order By date: ", data);
             })
             .catch(error => {
               console.error('Ошибка при получении данных:', error);
