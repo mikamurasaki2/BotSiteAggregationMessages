@@ -83,22 +83,43 @@ def get_all_users(db: Session = Depends(get_db)):
 
 def get_messages(posts: list = Depends(get_all_posts), token: str = Depends(reuseable_oauth),
                  db: Session = Depends(get_db)):
-    validate_token(token)
-    return [
-        {
-            'username': post.username,
-            'date': parse_timestamp(post.date),
-            'text': post.message_text,
-            'chat_id': post.chat_id,
-            'id': post.message_id,
-            'chatname': post.chat_username,
-            'name': db.query(models.User).filter(models.User.user_id == post.user_id).first().user_first_name,
-            'last_name': db.query(models.User).filter(models.User.user_id == post.user_id).first().user_last_name,
-            'is_admin_answer': post.is_admin_answer
-        }
-        for post in posts
-    ]
-
+    if validate_token(token):
+        return [
+            {
+                'username': post.username,
+                'date': parse_timestamp(post.date),
+                'text': post.message_text,
+                'chat_id': post.chat_id,
+                'id': post.message_id,
+                'chatname': post.chat_username,
+                'name': db.query(models.User).filter(models.User.user_id == post.user_id).first().user_first_name,
+                'last_name': db.query(models.User).filter(models.User.user_id == post.user_id).first().user_last_name,
+                'is_admin_answer': post.is_admin_answer,
+                'msg_id': post.message_id,
+                'msg_type': post.question_type
+            }
+            for post in posts
+        ]
+    else:
+        token_data = verify_token(token)
+        user_id = token_data.get("id")
+        print("Get messages: ", user_id)
+        return [
+            {
+                'username': post.username,
+                'date': parse_timestamp(post.date),
+                'text': post.message_text,
+                'chat_id': post.chat_id,
+                'id': post.message_id,
+                'chatname': post.chat_username,
+                'name': db.query(models.User).filter(models.User.user_id == post.user_id).first().user_first_name,
+                'last_name': db.query(models.User).filter(models.User.user_id == post.user_id).first().user_last_name,
+                'is_admin_answer': post.is_admin_answer,
+                'msg_id': post.message_id,
+                'msg_type': post.question_type
+            }
+            for post in posts if post.user_id == user_id
+        ]
 
 def get_chats(chats: list = Depends(get_all_chats), token: str = Depends(reuseable_oauth)):
     if validate_token(token):
@@ -106,7 +127,8 @@ def get_chats(chats: list = Depends(get_all_chats), token: str = Depends(reuseab
             {
                 'chat_id': chat.chat_id,
                 'chat_username': chat.chat_username,
-                'chat_type': chat.question_type
+                'chat_type': chat.question_type,
+                'msg_id': chat.message_id
             }
             for chat in chats]
     else:
@@ -134,7 +156,7 @@ def get_message(post: dict = Depends(get_post), token: str = Depends(reuseable_o
         'chat_id': post.chat_id,
         'chatname': post.chat_username,
         'name': db.query(models.User).filter(models.User.user_id == post.user_id).first().user_first_name,
-        'last_name': db.query(models.User).filter(models.User.user_id == post.user_id).first().user_last_name
+        'last_name': db.query(models.User).filter(models.User.user_id == post.user_id).first().user_last_name,
     }
 
 
@@ -185,12 +207,12 @@ def login(view_user: User, db: Session = Depends(get_db)):
         if user.is_admin == 1:
             return {
                 "access_token": "supersecretadmintokenkey123",
-                "refresh_token": create_refresh_token(user.username, user.id),
+                "refresh_token": create_refresh_token(user.username, user.user_id),
                 "admin_token": "supersecretadmintokenkey123"
             }
         else:
             return {
-                "access_token": create_access_token(user.username, user.id),
-                "refresh_token": create_refresh_token(user.username, user.id),
+                "access_token": create_access_token(user.username, user.user_id),
+                "refresh_token": create_refresh_token(user.username, user.user_id),
                 "admin_token": ""
             }

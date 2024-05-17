@@ -32,8 +32,8 @@
       <div class="dropdown">
         <button class="dropbtn">Выберите категорию</button>
         <div class="dropdown-content">
-          <a v-for="chat in chats" @click="toggleChatByType(chat.chat_type)">{{ chat.chat_type }}
-            <img v-if="selected_chats.includes(chat.chat_id)" src="img/checkmark.png" alt="Checkmark" width="20">
+          <a v-for="c_type in uniqueChatTypes" :key="c_type" @click="toggleChatByType(c_type)">{{ c_type }}
+            <img v-if="selected_types.includes(c_type)" src="img/checkmark.png" alt="Checkmark" width="20">
           </a>
         </div>
       </div>
@@ -69,6 +69,7 @@
           button_text: 'Выйти',
           rotation_date: 0,
           selected_chats: [],
+          selected_types: [],
           chats: [],
           data: [],
           desc_option: 'false',
@@ -98,6 +99,12 @@
         this.get_chats()
         this.sortByDate()
       },
+      computed: {
+          uniqueChatTypes() {
+            const chatTypes = this.chats.map(chat => chat.chat_type);
+            return [...new Set(chatTypes)];
+          }
+        },
       methods: {
         delete_post(post_id) {
           if (confirm('Вы уверены, что хотите удалить этот пост?')) {
@@ -169,7 +176,8 @@
           } else { chats_param = '' }
           this.request_get('get_messages', [`des=${desc_option}`, chats_param], this.headers)
             .then(data => {
-              this.fetchDataByDate()
+              console.log("Fetch Data");
+              this.fetchDataByDate();
             })
         },
         login() {
@@ -188,6 +196,7 @@
                 index === self.findIndex(c => c.chat_id === chat.chat_id)
               );
               this.chats = uniqueChats;
+              console.log("Get Chats: ", this.chats);;
             });
         },
 
@@ -211,6 +220,7 @@
           this.request_get('get_messages', [startDateParam, endDateParam, chatsParam, `des=${this.desc_option}`], this.headers)
             .then(data => {
               this.data = data;
+              console.log("Order By date");
             })
             .catch(error => {
               console.error('Ошибка при получении данных:', error);
@@ -227,24 +237,46 @@
           console.log("this.selected_chats:", this.selected_chats);
           this.fetchData(this.selected_chats, this.desc_option);
         },
+        fetchDataCategory(chats = this.chats, desc_option = this.desc_option) {
+          console.log("Начало Fetch");
+          if (chats.length > 0) {
+            chats_param = `msg_id=${chats.join('&msg_id=')}`;
+            console.log("chats_param: ", chats_param);
+          } else { chats_param = '' }
+          this.request_get('get_messages', [`des=${desc_option}`, chats_param], this.headers)
+            .then(data => {
+              console.log("Fetch Data: ", data)
+              this.data = data;
+            })
+        },
         toggleChatByType(chat) {
           console.log("Начало toggleChatByType");
           console.log("chatType:", chat);
           console.log("this.selected_chats:", this.selected_chats);
-          console.log("this.chats:", this.chats);
-          
-          filtered = this.chats.filter(selectedChat => selectedChat.chat_type === chat)
+          console.log("this.data:", this.data);   
+
+          if (this.selected_types.includes(chat)) {
+            this.selected_types = this.selected_types.filter(selectedType => selectedType !== chat);
+            console.log("types remain:", this.selected_types);
+            this.fetchData()
+            this.selected_types.forEach(chatType => {
+              this.data = this.data.filter(selectedChat => selectedChat.msg_type === chatType)
+            })
+          }
+          else {
+            this.selected_types.push(chat)
+            this.data = this.data.filter(selectedChat => selectedChat.msg_type === chat)
+          }
+          filtered = this.data.filter(selectedChat => selectedChat.msg_type === chat)
                                .map(selectedChat => selectedChat.chat_id);
-          console.log("filetered:", filtered);
           filtered.forEach(chatId => {
             if (!this.selected_chats.includes(chatId)) {
               this.selected_chats.push(chatId);
             }
             else {
             this.selected_chats = this.selected_chats.filter(selectedChat => selectedChat !== chatId);
-          }
-          }); 
-          this.fetchData(this.selected_chats, this.desc_option);
+            }
+            }); 
 
           console.log("Конец toggleChatByType");
         },
