@@ -19,16 +19,21 @@ def get_all_users(db: Session = Depends(get_db)):
     return db.query(models.PrivateUser).distinct().all()
 
 
-def get_users(users: dict = Depends(get_all_users), token: str = Depends(reuseable_oauth)):
+def get_users(users: dict = Depends(get_all_users),
+              token: str = Depends(reuseable_oauth)):
     is_admin = validate_token(token)
     if is_admin:
+
         return [
             {
                 "user_id": user.user_id,
                 "username": user.username,
-                "is_admin": user.is_admin
+                "is_admin": user.is_admin,
+                # "first_name": user.user.user_first_name,
+                # "last_name": user.user.user_last_name
             }
-            for user in users]
+            for user in users
+        ]
     else:
         raise HTTPException(status_code=403, detail=f"Auth Error. User is not admin")
 

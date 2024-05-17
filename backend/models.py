@@ -41,6 +41,7 @@ class Message(Base):
     chat_username = Column(String)
     username = Column(String)
     date = Column(Integer)
+    question_type = Column(String)
     is_admin_answer = Column(Integer)
 
 
@@ -49,7 +50,6 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     chat_id = Column(Integer)
-    chat_username = Column(String)
     user_id = Column(Integer)
     user_first_name = Column(String)
     user_last_name = Column(String)

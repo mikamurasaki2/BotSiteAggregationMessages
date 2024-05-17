@@ -101,13 +101,27 @@ def get_messages(posts: list = Depends(get_all_posts), token: str = Depends(reus
 
 
 def get_chats(chats: list = Depends(get_all_chats), token: str = Depends(reuseable_oauth)):
-    validate_token(token)
-    return [
-        {
-            'chat_id': chat.chat_id,
-            'chat_username': chat.chat_username
-        }
-        for chat in chats]
+    if validate_token(token):
+        return [
+            {
+                'chat_id': chat.chat_id,
+                'chat_username': chat.chat_username,
+                'chat_type': chat.question_type
+            }
+            for chat in chats]
+    else:
+        db = next(get_db())
+        token_data = verify_token(token)
+        user_id = token_data.get("id")
+        chat_ids = [user.chat_id for user in db.query(models.User).filter(models.User.user_id == user_id).all()]
+        chats = db.query(models.Message).filter(models.Message.chat_id.in_(chat_ids)).all()
+        return [
+            {
+                'chat_id': chat.chat_id,
+                'chat_username': chat.chat_username,
+                'chat_type': chat.question_type
+            }
+            for chat in chats]
 
 
 def get_message(post: dict = Depends(get_post), token: str = Depends(reuseable_oauth),
@@ -171,12 +185,12 @@ def login(view_user: User, db: Session = Depends(get_db)):
         if user.is_admin == 1:
             return {
                 "access_token": "supersecretadmintokenkey123",
-                "refresh_token": create_refresh_token(user.username),
+                "refresh_token": create_refresh_token(user.username, user.id),
                 "admin_token": "supersecretadmintokenkey123"
             }
         else:
             return {
-                "access_token": create_access_token(user.username),
-                "refresh_token": create_refresh_token(user.username),
+                "access_token": create_access_token(user.username, user.id),
+                "refresh_token": create_refresh_token(user.username, user.id),
                 "admin_token": ""
             }
