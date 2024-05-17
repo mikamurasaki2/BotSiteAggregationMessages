@@ -192,22 +192,58 @@ def get_message(post: dict = Depends(get_post), token: str = Depends(reuseable_o
 
 def get_replies_(replies: dict = Depends(get_replies), token: str = Depends(reuseable_oauth)):
     """
-    Функция получения данных комментария
+    Функция для отправки комментария в веб-приложении с проверкой роли пользователя.
+    Если комментарий отправлен админом, то тогда пост получает статус "Админ дал ответ"
     """
     validate_token(token)
-    return [
-        {
-            'username': reply.username,
-            'date': parse_timestamp(reply.date),
-            'text': reply.message_text,
-            'chat_id': reply.chat_id,
-            'id': reply.id,
-            'name': reply.user.user_first_name,
-            'last_name': reply.user.user_last_name,
-            'is_admin': reply.user.is_admin
-        }
-        for reply in replies
-    ]
+    data = list()
+    db = get_db()
+    context = next(db)
+
+    for reply in replies:
+        private_user = context.query(models.PrivateUser).filter(models.PrivateUser.user_id == reply.user_id).first()
+        if private_user:
+            data.append({
+                'username': reply.username,
+                'date': parse_timestamp(reply.date),
+                'text': reply.message_text,
+                'chat_id': reply.chat_id,
+                'id': reply.id,
+                'name': private_user.user_first_name,
+                'last_name': private_user.user_last_name,
+                'is_admin': reply.user.is_admin,
+                'user_id': reply.user_id
+            })
+            continue
+        else:
+            default_user = context.query(models.User).filter(models.User.user_id == reply.user_id).first()
+            if default_user:
+                data.append({
+                    'username': reply.username,
+                    'date': parse_timestamp(reply.date),
+                    'text': reply.message_text,
+                    'chat_id': reply.chat_id,
+                    'id': reply.id,
+                    'name': private_user.user_first_name,
+                    'last_name': private_user.user_last_name,
+                    'is_admin': reply.user.is_admin,
+                    'user_id': reply.user_id
+                })
+                continue
+            else:
+                data.append({
+                    'username': reply.username,
+                    'date': parse_timestamp(reply.date),
+                    'text': reply.message_text,
+                    'chat_id': reply.chat_id,
+                    'id': reply.id,
+                    'name': '',
+                    'last_name': '',
+                    'is_admin': reply.user.is_admin,
+                    'user_id': reply.user_id
+                })
+
+    return data;
 
 
 def add_reply(reply: models.Reply_Insert, db: Session = Depends(get_db),
