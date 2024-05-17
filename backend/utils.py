@@ -110,7 +110,7 @@ class TokenPayload(BaseModel):
 def validate_token(token: str): #, refresh_token: str = None
     if token == 'supersecretadmintokenkey123':
         return True
-    elif str(token) [:22] == 'secretadmintokenkey123':
+    elif str(token)[:22] == 'secretadmintokenkey123':
         return True
     else:
         try:
@@ -156,8 +156,8 @@ def verify_token(token: str):
     if token == 'supersecretadmintokenkey123':
         token_data = TokenPayload(exp=828389, sub="admin", id=1)
         return token_data
-    elif str(token) [:22] == 'secretadmintokenkey123':
-        token_data = TokenPayload(exp=828389, sub="admin", id=str(token) [22:])
+    elif str(token)[:22] == 'secretadmintokenkey123':
+        token_data = TokenPayload(exp=828389, sub="admin", id=str(token)[22:])
         return token_data
     try:
         payload = jwt.decode(
